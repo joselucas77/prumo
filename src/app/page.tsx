@@ -326,6 +326,7 @@ export default function Home() {
         open={formOpen}
         onOpenChange={setFormOpen}
         taskToEdit={editingTask}
+        categories={categories}
         onSubmit={handleFormSubmit}
       />
     </div>

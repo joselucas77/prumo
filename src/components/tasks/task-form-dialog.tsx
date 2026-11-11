@@ -7,6 +7,7 @@ import { Drawer, DrawerHeader, DrawerTitle, DrawerDescription } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Select,
   SelectTrigger,
@@ -32,6 +33,7 @@ interface TaskFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   taskToEdit?: Task | null;
+  categories?: string[];
   onSubmit: (data: TaskFormData) => Promise<void>;
 }
 
@@ -48,11 +50,13 @@ const DAYS_OF_WEEK = [
 
 function TaskFormContent({
   taskToEdit,
+  availableCategories = [],
   isMobile,
   onCancel,
   onSubmit,
 }: {
   taskToEdit?: Task | null;
+  availableCategories?: string[];
   isMobile: boolean;
   onCancel: () => void;
   onSubmit: (data: TaskFormData) => Promise<void>;
@@ -61,6 +65,14 @@ function TaskFormContent({
 
   const [description, setDescription] = React.useState(() => taskToEdit?.description || "");
   const [category, setCategory] = React.useState(() => taskToEdit?.category || "Planejamento");
+
+  const categoryOptions = React.useMemo(() => {
+    const set = new Set([...CATEGORY_SUGGESTIONS, ...availableCategories]);
+    if (category && category.trim()) {
+      set.add(category.trim());
+    }
+    return Array.from(set).sort();
+  }, [availableCategories, category]);
   const [startDateStr, setStartDateStr] = React.useState(() => {
     if (taskToEdit?.startDate) {
       return new Date(taskToEdit.startDate).toISOString().slice(0, 10);
@@ -161,34 +173,20 @@ function TaskFormContent({
           />
         </div>
 
-        {/* Categoria com sugestões rápidas */}
+        {/* Categoria com Combobox (com criação direta de nova categoria) */}
         <div className="space-y-1.5">
           <label htmlFor="category" className="text-xs font-semibold text-foreground">
             Categoria
           </label>
-          <Input
+          <Combobox
             id="category"
-            placeholder="Ex: Trabalho, Saúde, Estudos..."
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="text-base md:text-sm"
+            onChange={(newCategory) => setCategory(newCategory)}
+            options={categoryOptions}
+            placeholder="Selecione ou crie uma categoria..."
+            searchPlaceholder="Buscar ou digitar nova categoria..."
+            allowCreate={true}
           />
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            {CATEGORY_SUGGESTIONS.map((cat) => (
-              <button
-                type="button"
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors cursor-pointer ${
-                  category === cat
-                    ? "bg-primary text-primary-foreground border-primary font-semibold"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Datas de Início e Término */}
@@ -315,7 +313,14 @@ function TaskFormContent({
               onValueChange={(val) => setStatus((val as TaskStatus) || "in_progress")}
             >
               <SelectTrigger className="h-10 rounded-xl bg-background text-base md:text-sm">
-                <SelectValue placeholder="Selecione o status" />
+                <SelectValue placeholder="Selecione o status">
+                  {(val) => {
+                    if (val === "in_progress") return "Em Andamento";
+                    if (val === "completed") return "Concluída";
+                    if (val === "archived") return "Arquivada";
+                    return String(val || "Em Andamento");
+                  }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="in_progress">Em Andamento</SelectItem>
@@ -337,7 +342,7 @@ function TaskFormContent({
             {busy ? (
               <BoxIcon name="loader-alt" className="animate-spin text-xl mr-2" />
             ) : null}
-            {taskToEdit ? "Salvar Alterações" : "Criar Tarefa no WatermelonDB"}
+            Salvar
           </Button>
           <Button
             type="button"
@@ -366,7 +371,7 @@ function TaskFormContent({
             {busy ? (
               <BoxIcon name="loader-alt" className="animate-spin text-lg mr-2" />
             ) : null}
-            {taskToEdit ? "Salvar Alterações" : "Criar Tarefa"}
+            Salvar
           </Button>
         </div>
       )}
@@ -378,6 +383,7 @@ export function TaskFormDialog({
   open,
   onOpenChange,
   taskToEdit,
+  categories = [],
   onSubmit,
 }: TaskFormDialogProps) {
   const isMobile = useIsMobile();
@@ -403,6 +409,7 @@ export function TaskFormDialog({
           <TaskFormContent
             key={formKey}
             taskToEdit={taskToEdit}
+            availableCategories={categories}
             isMobile={isMobile}
             onCancel={handleCancel}
             onSubmit={onSubmit}
@@ -427,6 +434,7 @@ export function TaskFormDialog({
         <TaskFormContent
           key={formKey}
           taskToEdit={taskToEdit}
+          availableCategories={categories}
           isMobile={isMobile}
           onCancel={handleCancel}
           onSubmit={onSubmit}

@@ -203,7 +203,9 @@ export function TaskFilters({
                 onValueChange={(val) => onCategoryChange((val as string) || "all")}
               >
                 <SelectTrigger className="h-9 rounded-lg text-xs font-medium bg-background">
-                  <SelectValue placeholder="Todas as Categorias" />
+                  <SelectValue placeholder="Todas as Categorias">
+                    {(val) => (val === "all" || !val ? "Todas as Categorias" : String(val))}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas as Categorias</SelectItem>
@@ -227,7 +229,14 @@ export function TaskFilters({
                 onValueChange={(val) => onDateFilterChange((val as DateFilterOption) || "today")}
               >
                 <SelectTrigger className="h-9 rounded-lg text-xs font-medium bg-background">
-                  <SelectValue placeholder="Selecione o período" />
+                  <SelectValue placeholder="Selecione o período">
+                    {(val) => {
+                      if (val === "today") return "Hoje";
+                      if (val === "week") return "Últimos 7 dias";
+                      if (val === "all") return "Todas as datas";
+                      return String(val || "Hoje");
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="today">Hoje</SelectItem>

@@ -12,6 +12,7 @@ const PopoverClose = PopoverPrimitive.Close;
 
 function PopoverContent({
   className,
+  positionerClassName,
   align = "center",
   sideOffset = 4,
   children,
@@ -19,13 +20,14 @@ function PopoverContent({
 }: React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Popup> & {
   align?: "start" | "center" | "end";
   sideOffset?: number;
+  positionerClassName?: string;
 }) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
         sideOffset={sideOffset}
         align={align}
-        className="z-50"
+        className={cn("z-50", positionerClassName)}
       >
         <PopoverPrimitive.Popup
           className={cn(

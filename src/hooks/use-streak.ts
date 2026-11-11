@@ -30,9 +30,17 @@ function getYesterdayDateString(): string {
 }
 
 function loadStreakFromStorage(): number {
-  if (typeof window === "undefined") return 3;
+  if (typeof window === "undefined") return 0;
 
   try {
+    // Limpa quaisquer dados mockados pré-existentes na primeira execução
+    const resetKey = "prumo_streak_reset_v2";
+    if (!localStorage.getItem(resetKey)) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(resetKey, "true");
+      return 0;
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed: StreakData = JSON.parse(stored);
@@ -47,7 +55,7 @@ function loadStreakFromStorage(): number {
   } catch {
     // fallback
   }
-  return 3;
+  return 0;
 }
 
 function subscribeStreak(callback: () => void) {
@@ -61,7 +69,7 @@ function subscribeStreak(callback: () => void) {
 }
 
 export function useStreak(todayTasks: Task[]) {
-  const streakCount = useSyncExternalStore(subscribeStreak, loadStreakFromStorage, () => 3);
+  const streakCount = useSyncExternalStore(subscribeStreak, loadStreakFromStorage, () => 0);
   const hasTriggeredRef = useRef<boolean>(false);
 
   const totalCount = todayTasks.length;

@@ -9,7 +9,38 @@ const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
 
-const SelectValue = SelectPrimitive.Value;
+interface SelectValueProps extends Omit<React.ComponentPropsWithoutRef<typeof SelectPrimitive.Value>, "children"> {
+  placeholder?: React.ReactNode;
+  children?: React.ReactNode | ((value: unknown) => React.ReactNode);
+}
+
+const COMMON_PORTUGUESE_LABELS: Record<string, string> = {
+  all: "Todas as Categorias",
+  today: "Hoje",
+  week: "Últimos 7 dias",
+  in_progress: "Em Andamento",
+  completed: "Concluída",
+  archived: "Arquivada",
+};
+
+function SelectValue({ placeholder, children, ...props }: SelectValueProps) {
+  return (
+    <SelectPrimitive.Value placeholder={placeholder} {...props}>
+      {(val) => {
+        if (typeof children === "function") {
+          return children(val);
+        }
+        if (children) {
+          return children;
+        }
+        if (typeof val === "string" && COMMON_PORTUGUESE_LABELS[val]) {
+          return COMMON_PORTUGUESE_LABELS[val];
+        }
+        return val ? String(val) : null;
+      }}
+    </SelectPrimitive.Value>
+  );
+}
 
 function SelectTrigger({
   className,
