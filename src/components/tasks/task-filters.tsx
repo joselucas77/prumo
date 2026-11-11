@@ -31,11 +31,15 @@ export function TaskFilters({
   onStatusFilterChange,
   categories,
 }: TaskFiltersProps) {
-  const hasActiveFilters =
-    searchQuery.trim() !== "" ||
-    selectedCategory !== "all" ||
-    selectedDateFilter !== "today" ||
-    selectedStatusFilter !== "today";
+  const [filtersOpen, setFiltersOpen] = React.useState<boolean>(false);
+
+  // Verifica se há filtros customizados ativos além do padrão ("today")
+  const activeFiltersCount =
+    (selectedCategory !== "all" ? 1 : 0) +
+    (selectedDateFilter !== "today" ? 1 : 0) +
+    (selectedStatusFilter !== "today" ? 1 : 0);
+
+  const hasActiveFilters = activeFiltersCount > 0 || searchQuery.trim() !== "";
 
   const handleResetFilters = () => {
     onSearchChange("");
@@ -45,140 +49,194 @@ export function TaskFilters({
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full bg-card p-4 rounded-2xl border shadow-sm">
-      {/* Campo de Busca por Texto */}
-      <div className="relative w-full">
-        <BoxIcon
-          name="search"
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg"
-        />
-        <Input
-          type="text"
-          placeholder="Buscar tarefas por descrição..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 pr-9 bg-background/50 h-11 rounded-xl text-base md:text-sm"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => onSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
-          >
-            <BoxIcon name="x" className="text-base" />
-          </button>
-        )}
-      </div>
-
-      {/* Linha de Abas Rápidas de Visualização */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-        <button
-          type="button"
-          onClick={() => {
-            onStatusFilterChange("today");
-            onDateFilterChange("today");
-          }}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 cursor-pointer ${
-            selectedStatusFilter === "today"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-        >
-          Tarefas de Hoje
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            onStatusFilterChange("all");
-            onDateFilterChange("all");
-          }}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 cursor-pointer ${
-            selectedStatusFilter === "all" && selectedDateFilter === "all"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-        >
-          Todas as Tarefas
-        </button>
-        <button
-          type="button"
-          onClick={() => onStatusFilterChange("completed")}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 cursor-pointer ${
-            selectedStatusFilter === "completed"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-        >
-          Concluídas
-        </button>
-        <button
-          type="button"
-          onClick={() => onStatusFilterChange("archived")}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 cursor-pointer ${
-            selectedStatusFilter === "archived"
-              ? "bg-primary text-primary-foreground shadow-sm"
-              : "bg-muted text-muted-foreground hover:bg-muted/80"
-          }`}
-        >
-          Arquivadas
-        </button>
-      </div>
-
-      {/* Filtros em Dropdowns/Seletores: Categoria e Data de Criação */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t text-xs">
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Filtro por Categoria */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground font-medium flex items-center gap-1">
-              <BoxIcon name="category" className="text-sm" />
-              Categoria:
-            </span>
-            <select
-              value={selectedCategory}
-              onChange={(e) => onCategoryChange(e.target.value)}
-              className="bg-background border rounded-lg px-2.5 py-1.5 font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-xs cursor-pointer"
+    <div className="flex flex-col gap-2.5 w-full">
+      {/* Linha Principal: Input de Busca com Botão Compacto de Filtros à Direita */}
+      <div className="flex items-center gap-2 w-full">
+        <div className="relative flex-1">
+          <BoxIcon
+            name="search"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-base"
+          />
+          <Input
+            type="text"
+            placeholder="Buscar tarefas..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-9 pr-9 bg-card h-10 rounded-xl text-base md:text-sm border shadow-sm"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => onSearchChange("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+              aria-label="Limpar busca"
             >
-              <option value="all">Todas as Categorias</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Filtro por Data de Criação */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground font-medium flex items-center gap-1">
-              <BoxIcon name="calendar" className="text-sm" />
-              Data:
-            </span>
-            <select
-              value={selectedDateFilter}
-              onChange={(e) => onDateFilterChange(e.target.value as DateFilterOption)}
-              className="bg-background border rounded-lg px-2.5 py-1.5 font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring text-xs cursor-pointer"
-            >
-              <option value="today">Hoje</option>
-              <option value="week">Últimos 7 dias</option>
-              <option value="all">Todas as datas</option>
-            </select>
-          </div>
+              <BoxIcon name="x" className="text-base" />
+            </button>
+          )}
         </div>
 
-        {/* Botão de Limpar Filtros */}
-        {hasActiveFilters && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleResetFilters}
-            className="h-7 text-xs text-muted-foreground hover:text-foreground px-2"
-          >
-            <BoxIcon name="reset" className="mr-1" />
-            Limpar filtros
-          </Button>
-        )}
+        {/* Ícone Pequeno de Filtro ao lado do Input */}
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((prev) => !prev)}
+          className={`relative h-10 w-10 shrink-0 flex items-center justify-center rounded-xl border transition-all cursor-pointer shadow-sm select-none ${
+            filtersOpen || activeFiltersCount > 0
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-card text-muted-foreground hover:text-foreground hover:bg-accent border-input"
+          }`}
+          title="Filtros de visualização"
+          aria-label="Abrir filtros de tarefas"
+        >
+          <BoxIcon name="slider-alt" className="text-lg" />
+          {activeFiltersCount > 0 && !filtersOpen && (
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-orange-500 text-[10px] font-bold text-white flex items-center justify-center shadow-sm">
+              {activeFiltersCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* Painel Retrátil de Filtros (aparece ao clicar no ícone) */}
+      {filtersOpen && (
+        <div className="flex flex-col gap-3 p-4 rounded-2xl border bg-card shadow-md animate-in slide-in-from-top-2 fade-in duration-150">
+          <div className="flex items-center justify-between border-b pb-2">
+            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+              <BoxIcon name="filter" className="text-sm text-primary" />
+              Filtrar Tarefas
+            </span>
+            <div className="flex items-center gap-2">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer"
+                >
+                  Limpar
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(false)}
+                className="p-1 rounded-md text-muted-foreground hover:bg-muted"
+                aria-label="Fechar filtros"
+              >
+                <BoxIcon name="x" className="text-base" />
+              </button>
+            </div>
+          </div>
+
+          {/* Abas Rápidas de Status */}
+          <div className="space-y-1">
+            <span className="text-[11px] font-semibold text-muted-foreground">Exibição:</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  onStatusFilterChange("today");
+                  onDateFilterChange("today");
+                }}
+                className={`px-2.5 py-1.5 rounded-lg font-medium transition-all text-center cursor-pointer ${
+                  selectedStatusFilter === "today"
+                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    : "bg-muted/70 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Tarefas de Hoje
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onStatusFilterChange("all");
+                  onDateFilterChange("all");
+                }}
+                className={`px-2.5 py-1.5 rounded-lg font-medium transition-all text-center cursor-pointer ${
+                  selectedStatusFilter === "all" && selectedDateFilter === "all"
+                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    : "bg-muted/70 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                onClick={() => onStatusFilterChange("completed")}
+                className={`px-2.5 py-1.5 rounded-lg font-medium transition-all text-center cursor-pointer ${
+                  selectedStatusFilter === "completed"
+                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    : "bg-muted/70 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Concluídas
+              </button>
+              <button
+                type="button"
+                onClick={() => onStatusFilterChange("archived")}
+                className={`px-2.5 py-1.5 rounded-lg font-medium transition-all text-center cursor-pointer ${
+                  selectedStatusFilter === "archived"
+                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    : "bg-muted/70 text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Arquivadas
+              </button>
+            </div>
+          </div>
+
+          {/* Seletores: Categoria e Data */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            {/* Categoria */}
+            <div className="space-y-1">
+              <label htmlFor="filterCategory" className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                <BoxIcon name="category" className="text-xs" />
+                Categoria:
+              </label>
+              <select
+                id="filterCategory"
+                value={selectedCategory}
+                onChange={(e) => onCategoryChange(e.target.value)}
+                className="w-full bg-background border rounded-lg px-2.5 py-1.5 font-medium text-foreground text-xs focus:ring-1 focus:ring-ring cursor-pointer"
+              >
+                <option value="all">Todas as Categorias</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Data de Criação */}
+            <div className="space-y-1">
+              <label htmlFor="filterDate" className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                <BoxIcon name="calendar" className="text-xs" />
+                Período:
+              </label>
+              <select
+                id="filterDate"
+                value={selectedDateFilter}
+                onChange={(e) => onDateFilterChange(e.target.value as DateFilterOption)}
+                className="w-full bg-background border rounded-lg px-2.5 py-1.5 font-medium text-foreground text-xs focus:ring-1 focus:ring-ring cursor-pointer"
+              >
+                <option value="today">Hoje</option>
+                <option value="week">Últimos 7 dias</option>
+                <option value="all">Todas as datas</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="pt-1 flex justify-end">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setFiltersOpen(false)}
+              className="h-8 rounded-lg px-4 text-xs font-semibold"
+            >
+              Concluir
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -135,19 +135,17 @@ export async function reorderTasks(taskIds: string[]): Promise<void> {
   const collection = db.get<Task>("tasks");
 
   await db.write(async () => {
-    const batchUpdates = [];
     for (let i = 0; i < taskIds.length; i++) {
-      const task = await collection.find(taskIds[i]);
-      if (task.orderIndex !== i) {
-        batchUpdates.push(
-          task.prepareUpdate((record) => {
+      try {
+        const task = await collection.find(taskIds[i]);
+        if (task && task.orderIndex !== i) {
+          await task.update((record) => {
             record.orderIndex = i;
-          })
-        );
+          });
+        }
+      } catch (err) {
+        console.warn(`Could not update order for task ${taskIds[i]}:`, err);
       }
-    }
-    if (batchUpdates.length > 0) {
-      await db.batch(...batchUpdates);
     }
   });
 }

@@ -26,115 +26,141 @@ export function Header({
   syncStatus,
   onSyncClick,
 }: HeaderProps) {
+  const [streakExpanded, setStreakExpanded] = React.useState<boolean>(false);
+
   return (
     <header className="w-full border-b bg-background/95 backdrop-blur-md sticky top-0 z-30 transition-all">
-      <div className="max-w-4xl mx-auto px-4 py-4 md:py-5 flex flex-col gap-4">
-        {/* Barra Superior: Logo e Status de Conexão */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-xl shadow-md tracking-tight">
+      <div className="max-w-4xl mx-auto px-4 py-3 sm:py-3.5 flex flex-col gap-3">
+        {/* Barra Superior: Logo Prumo, Botão de Ofensiva Minimizado e Sync */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Logo Prumo */}
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-sm tracking-tight">
               P
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-black tracking-tight text-foreground">
-                  Prumo
-                </h1>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground border">
-                  Offline-First
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground hidden sm:block">
-                Alinhamento e foco diário com persistência local
-              </p>
-            </div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
+              Prumo
+            </h1>
           </div>
 
-          {/* Badge de Sincronização & Internet */}
+          {/* Ações da Direita: Botão de Ofensiva (Minimizado) e Badge de Sincronização */}
           <div className="flex items-center gap-2">
+            {/* Botão de Ofensiva Minimizado */}
+            <button
+              type="button"
+              onClick={() => setStreakExpanded((prev) => !prev)}
+              title="Clique para ver o progresso e detalhes da ofensiva"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-sm select-none ${
+                isTodayCompleted
+                  ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30 hover:bg-orange-500/25"
+                  : "bg-muted/80 text-foreground border-border hover:bg-muted"
+              }`}
+            >
+              <span className="text-sm leading-none">🔥</span>
+              <span>
+                {streakCount} {streakCount === 1 ? "dia" : "dias"}
+              </span>
+              <BoxIcon
+                name={streakExpanded ? "chevron-up" : "chevron-down"}
+                className="text-xs text-muted-foreground ml-0.5"
+              />
+            </button>
+
+            {/* Botão / Badge de Sincronização */}
             <button
               onClick={onSyncClick}
               disabled={syncStatus === "syncing" || !isOnline}
               title={
                 !isOnline
-                  ? "Modo Offline ativo (Salvo no WatermelonDB)"
+                  ? "Modo Offline ativo (Salvo no WatermelonDB local)"
                   : "Clique para forçar sincronização com o Supabase"
               }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border bg-card hover:bg-accent transition-colors disabled:opacity-60 cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border bg-card hover:bg-accent transition-colors disabled:opacity-60 cursor-pointer shadow-sm"
             >
               {syncStatus === "syncing" ? (
                 <>
-                  <BoxIcon name="loader-alt" className="animate-spin text-primary" />
-                  <span className="hidden sm:inline">Sincronizando...</span>
+                  <BoxIcon name="loader-alt" className="animate-spin text-primary text-sm" />
+                  <span className="hidden sm:inline">Sync...</span>
                 </>
               ) : !isOnline ? (
                 <>
                   <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="text-amber-600 dark:text-amber-400 font-semibold">Offline</span>
+                  <span className="text-amber-600 dark:text-amber-400 font-semibold text-[11px]">Offline</span>
                 </>
               ) : syncStatus === "error" ? (
                 <>
                   <span className="h-2 w-2 rounded-full bg-destructive" />
-                  <span className="text-destructive font-semibold">Sync Pendente</span>
+                  <span className="text-destructive font-semibold text-[11px] hidden sm:inline">Pendente</span>
                 </>
               ) : (
                 <>
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  <span className="text-emerald-600 dark:text-emerald-400 hidden sm:inline">Sincronizado</span>
-                  <BoxIcon name="cloud" className="text-sm text-muted-foreground" />
+                  <BoxIcon name="cloud" className="text-xs text-muted-foreground" />
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* Card Destaque da Ofensiva */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-orange-500/20 p-4 md:p-5 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div
-                className={`h-14 w-14 rounded-2xl flex items-center justify-center text-3xl shadow-sm transition-transform duration-300 ${
-                  isTodayCompleted
-                    ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white scale-105 shadow-orange-500/30 shadow-lg"
-                    : "bg-orange-500/20 text-orange-600 dark:text-orange-400"
-                }`}
-              >
-                🔥
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">
-                    {streakCount} {streakCount === 1 ? "dia" : "dias"}
-                  </span>
-                  <Badge variant={isTodayCompleted ? "success" : "warning"} className="font-bold">
-                    {isTodayCompleted ? "Ofensiva Ativa" : "Em Andamento"}
-                  </Badge>
-                </div>
-                <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                  {isTodayCompleted
-                    ? "Parabéns! 100% das tarefas de hoje foram concluídas."
-                    : "Conclua todas as tarefas de hoje para manter a sequência!"}
-                </p>
-              </div>
-            </div>
+        {/* Card de Ofensiva Expandido (abre apenas quando clicado) */}
+        {streakExpanded && (
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-orange-500/25 p-4 shadow-md animate-in slide-in-from-top-2 fade-in duration-200">
+            {/* Botão de Fechar no canto superior */}
+            <button
+              type="button"
+              onClick={() => setStreakExpanded(false)}
+              className="absolute top-2.5 right-2.5 p-1 rounded-full text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              aria-label="Minimizar ofensiva"
+            >
+              <BoxIcon name="x" className="text-lg" />
+            </button>
 
-            {/* Progresso do Dia */}
-            <div className="flex flex-col sm:items-end gap-1.5 min-w-[160px]">
-              <div className="flex items-center justify-between sm:justify-end gap-2 text-xs font-semibold">
-                <span className="text-muted-foreground">Progresso de Hoje:</span>
-                <span className="text-primary font-bold">
-                  {completedCount}/{totalCount} ({completionPercentage}%)
-                </span>
-              </div>
-              <div className="w-full sm:w-44 h-2.5 bg-muted rounded-full overflow-hidden border border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pr-6 sm:pr-0">
+              <div className="flex items-center gap-3">
                 <div
-                  className="h-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500 rounded-full"
-                  style={{ width: `${completionPercentage}%` }}
-                />
+                  className={`h-12 w-12 rounded-xl flex items-center justify-center text-2xl shadow-sm shrink-0 transition-transform ${
+                    isTodayCompleted
+                      ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white scale-105 shadow-orange-500/30 shadow-md"
+                      : "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+                  }`}
+                >
+                  🔥
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
+                      {streakCount} {streakCount === 1 ? "dia" : "dias"}
+                    </span>
+                    <Badge variant={isTodayCompleted ? "success" : "warning"} className="font-bold text-[10px]">
+                      {isTodayCompleted ? "Ofensiva Concluída" : "Em Andamento"}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isTodayCompleted
+                      ? "Meta de hoje batida! Você manteve sua consistência diária."
+                      : "Conclua todas as tarefas de hoje para avançar a sequência."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Barra de Progresso de Hoje */}
+              <div className="flex flex-col sm:items-end gap-1.5 min-w-[160px]">
+                <div className="flex items-center justify-between sm:justify-end gap-2 text-xs font-semibold">
+                  <span className="text-muted-foreground">Hoje:</span>
+                  <span className="text-primary font-bold">
+                    {completedCount}/{totalCount} ({completionPercentage}%)
+                  </span>
+                </div>
+                <div className="w-full sm:w-44 h-2.5 bg-muted rounded-full overflow-hidden border border-border/50">
+                  <div
+                    className="h-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-500 rounded-full"
+                    style={{ width: `${completionPercentage}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );

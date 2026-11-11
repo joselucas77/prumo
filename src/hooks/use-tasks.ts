@@ -95,10 +95,27 @@ export function useTasks() {
   }, []);
 
   const handleReorder = useCallback(async (reorderedTaskIds: string[]) => {
+    // 1. Atualização otimista imediata no estado local
+    setTasks((prev) => {
+      const taskMap = new Map(prev.map((t) => [t.id, t]));
+      const nextList: Task[] = [];
+      for (const id of reorderedTaskIds) {
+        const item = taskMap.get(id);
+        if (item) nextList.push(item);
+      }
+      for (const item of prev) {
+        if (!reorderedTaskIds.includes(item.id)) {
+          nextList.push(item);
+        }
+      }
+      return nextList;
+    });
+
+    // 2. Persistência real no WatermelonDB
     try {
       await reorderTasks(reorderedTaskIds);
     } catch (err) {
-      console.error("Erro ao reordenar tarefas:", err);
+      console.error("Erro ao reordenar tarefas no banco:", err);
     }
   }, []);
 

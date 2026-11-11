@@ -150,7 +150,6 @@ function TaskFormContent({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="text-base md:text-sm font-medium"
-            autoFocus
           />
         </div>
 
@@ -381,7 +380,7 @@ export function TaskFormDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerHeader>
+        <DrawerHeader onClose={handleCancel}>
           <DrawerTitle>{taskToEdit ? "Editar Tarefa" : "Nova Tarefa"}</DrawerTitle>
           <DrawerDescription>
             {taskToEdit
