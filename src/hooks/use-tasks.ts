@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   getDatabase,
-  seedInitialTasksIfEmpty,
+  purgeGhostTasks,
   toggleTaskStatus,
   deleteTask,
   archiveTask,
@@ -25,8 +25,8 @@ export function useTasks() {
       try {
         if (typeof window === "undefined") return;
 
-        // Garante que o banco e sementes iniciais estejam prontos
-        await seedInitialTasksIfEmpty();
+        // Remove eventuais tarefas corrompidas ou vazias do banco local
+        await purgeGhostTasks();
 
         const db = getDatabase();
         const collection = db.get<Task>("tasks");

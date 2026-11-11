@@ -10,6 +10,7 @@ import {
 import { TaskList } from "@/components/tasks/task-list";
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
 import { FloatingActionButton } from "@/components/tasks/floating-action-button";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { useTasks } from "@/hooks/use-tasks";
 import { useOnlineSync } from "@/hooks/use-online-sync";
 import { useStreak } from "@/hooks/use-streak";
@@ -313,6 +314,9 @@ export default function Home() {
           )}
         </section>
       </main>
+
+      {/* Botão Flutuante de Rolagem Suave para o Topo */}
+      <ScrollToTop />
 
       {/* 4. Botão Flutuante (FAB) no canto inferior direito */}
       <FloatingActionButton onClick={handleOpenNewTask} />

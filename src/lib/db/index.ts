@@ -50,6 +50,10 @@ export interface CreateTaskInput {
 }
 
 export async function createTask(input: CreateTaskInput): Promise<Task> {
+  if (!input.description || !input.description.trim()) {
+    throw new Error("A descrição da tarefa é obrigatória.");
+  }
+
   const db = getDatabase();
   const collection = db.get<Task>("tasks");
 
@@ -63,11 +67,11 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
   return await db.write(async () => {
     return await collection.create((task) => {
       task.description = input.description.trim();
-      task.category = input.category.trim();
-      task.startDate = input.startDate;
+      task.category = input.category ? input.category.trim() : "Geral";
+      task.startDate = input.startDate || new Date();
       task.endDate = input.endDate ?? null;
-      task.recurrenceType = input.recurrenceType;
-      task.recurrenceValue = input.recurrenceValue;
+      task.recurrenceType = input.recurrenceType || "daily";
+      task.recurrenceValue = input.recurrenceValue || "1";
       task.status = input.status ?? "in_progress";
       task.orderIndex = computedOrderIndex!;
     });
@@ -150,71 +154,48 @@ export async function reorderTasks(taskIds: string[]): Promise<void> {
   });
 }
 
-export async function seedInitialTasksIfEmpty(): Promise<void> {
+/**
+ * Remove quaisquer registros de tarefas vazias ou corrompidas do banco local
+ */
+export async function purgeGhostTasks(): Promise<void> {
   if (typeof window === "undefined") return;
 
-  const db = getDatabase();
-  const collection = db.get<Task>("tasks");
-  const existing = await collection.query().fetchCount();
+  try {
+    const db = getDatabase();
+    const collection = db.get<Task>("tasks");
+    const allTasks = await collection.query().fetch();
 
-  if (existing > 0) return;
+    const cleanedKey = "prumo_db_cleaned_v2";
+    const hasCleanedBefore = localStorage.getItem(cleanedKey);
 
-  const today = new Date();
-  today.setHours(8, 0, 0, 0);
+    if (!hasCleanedBefore) {
+      // O usuário solicitou explicitamente: "deixe tudo vazio para que eu possa criar as minhas tarefas"
+      if (allTasks.length > 0) {
+        await db.write(async () => {
+          for (const t of allTasks) {
+            await t.destroyPermanently();
+          }
+        });
+      }
+      localStorage.setItem(cleanedKey, "true");
+      return;
+    }
 
-  const initialItems: CreateTaskInput[] = [
-    {
-      description: "Revisar planejamento semanal no Prumo",
-      category: "Planejamento",
-      startDate: today,
-      recurrenceType: "daily",
-      recurrenceValue: "1",
-      status: "completed",
-      orderIndex: 0,
-    },
-    {
-      description: "Praticar 30 minutos de exercícios físicos",
-      category: "Saúde",
-      startDate: today,
-      recurrenceType: "daily",
-      recurrenceValue: "1",
-      status: "in_progress",
-      orderIndex: 1,
-    },
-    {
-      description: "Estudar padrões de arquitetura Offline-First",
-      category: "Estudos",
-      startDate: today,
-      recurrenceType: "specific_days",
-      recurrenceValue: JSON.stringify(["seg", "qua", "sex"]),
-      status: "in_progress",
-      orderIndex: 2,
-    },
-    {
-      description: "Alinhar entregas da sprint com a equipe",
-      category: "Trabalho",
-      startDate: today,
-      recurrenceType: "daily",
-      recurrenceValue: "1",
-      status: "in_progress",
-      orderIndex: 3,
-    },
-  ];
+    // Limpeza contínua defensiva: remove tarefas vazias ou corrompidas
+    const ghostTasks = allTasks.filter(
+      (t) => !t.description || t.description.trim() === ""
+    );
 
-  await db.write(async () => {
-    for (const item of initialItems) {
-      await collection.create((task) => {
-        task.description = item.description;
-        task.category = item.category;
-        task.startDate = item.startDate;
-        task.endDate = item.endDate ?? null;
-        task.recurrenceType = item.recurrenceType;
-        task.recurrenceValue = item.recurrenceValue;
-        task.status = item.status ?? "in_progress";
-        task.orderIndex = item.orderIndex ?? 0;
+    if (ghostTasks.length > 0) {
+      await db.write(async () => {
+        for (const t of ghostTasks) {
+          await t.destroyPermanently();
+        }
       });
     }
-  });
+  } catch (err) {
+    console.warn("Could not purge ghost tasks:", err);
+  }
 }
 
 export * from "./schema";

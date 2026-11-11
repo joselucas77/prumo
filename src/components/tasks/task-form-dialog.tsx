@@ -6,6 +6,14 @@ import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogClose } fro
 import { Drawer, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { BoxIcon } from "@/components/ui/box-icon";
 import { Task, type TaskStatus, type RecurrenceType } from "@/lib/db";
 import { toast } from "sonner";
@@ -189,24 +197,24 @@ function TaskFormContent({
             <label htmlFor="startDate" className="text-xs font-semibold text-foreground">
               Data de Início
             </label>
-            <Input
+            <DatePicker
               id="startDate"
-              type="date"
               value={startDateStr}
-              onChange={(e) => setStartDateStr(e.target.value)}
-              className="text-base md:text-sm"
+              onChange={(dateStr) => setStartDateStr(dateStr)}
+              placeholder="Selecione data de início"
+              clearable={false}
             />
           </div>
           <div className="space-y-1.5">
             <label htmlFor="endDate" className="text-xs font-semibold text-foreground">
               Data de Término (Opcional)
             </label>
-            <Input
+            <DatePicker
               id="endDate"
-              type="date"
               value={endDateStr}
-              onChange={(e) => setEndDateStr(e.target.value)}
-              className="text-base md:text-sm"
+              onChange={(dateStr) => setEndDateStr(dateStr)}
+              placeholder="Sem data de término"
+              clearable={true}
             />
           </div>
         </div>
@@ -299,19 +307,22 @@ function TaskFormContent({
         {/* Status Inicial / Atual */}
         {taskToEdit && (
           <div className="space-y-1.5 pt-1">
-            <label htmlFor="taskStatus" className="text-xs font-semibold text-foreground">
+            <label className="text-xs font-semibold text-foreground">
               Status da Tarefa
             </label>
-            <select
-              id="taskStatus"
+            <Select
               value={status}
-              onChange={(e) => setStatus(e.target.value as TaskStatus)}
-              className="w-full bg-background border rounded-lg p-2.5 text-base md:text-sm text-foreground focus:ring-1 focus:ring-ring"
+              onValueChange={(val) => setStatus((val as TaskStatus) || "in_progress")}
             >
-              <option value="in_progress">Em Andamento</option>
-              <option value="completed">Concluída</option>
-              <option value="archived">Arquivada</option>
-            </select>
+              <SelectTrigger className="h-10 rounded-xl bg-background text-base md:text-sm">
+                <SelectValue placeholder="Selecione o status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="in_progress">Em Andamento</SelectItem>
+                <SelectItem value="completed">Concluída</SelectItem>
+                <SelectItem value="archived">Arquivada</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>

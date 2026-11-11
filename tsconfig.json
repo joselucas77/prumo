@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES2017",
     "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "lib": ["dom", "dom.iterable", "esnext", "webworker"],
     "allowJs": true,
     "skipLibCheck": true,

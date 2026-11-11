@@ -4,6 +4,13 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { BoxIcon } from "@/components/ui/box-icon";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 export type DateFilterOption = "today" | "week" | "all";
 export type StatusFilterOption = "today" | "all" | "completed" | "archived";
@@ -187,41 +194,47 @@ export function TaskFilters({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             {/* Categoria */}
             <div className="space-y-1">
-              <label htmlFor="filterCategory" className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+              <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                 <BoxIcon name="category" className="text-xs" />
                 Categoria:
               </label>
-              <select
-                id="filterCategory"
+              <Select
                 value={selectedCategory}
-                onChange={(e) => onCategoryChange(e.target.value)}
-                className="w-full bg-background border rounded-lg px-2.5 py-1.5 font-medium text-foreground text-xs focus:ring-1 focus:ring-ring cursor-pointer"
+                onValueChange={(val) => onCategoryChange((val as string) || "all")}
               >
-                <option value="all">Todas as Categorias</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-9 rounded-lg text-xs font-medium bg-background">
+                  <SelectValue placeholder="Todas as Categorias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as Categorias</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Data de Criação */}
             <div className="space-y-1">
-              <label htmlFor="filterDate" className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+              <label className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                 <BoxIcon name="calendar" className="text-xs" />
                 Período:
               </label>
-              <select
-                id="filterDate"
+              <Select
                 value={selectedDateFilter}
-                onChange={(e) => onDateFilterChange(e.target.value as DateFilterOption)}
-                className="w-full bg-background border rounded-lg px-2.5 py-1.5 font-medium text-foreground text-xs focus:ring-1 focus:ring-ring cursor-pointer"
+                onValueChange={(val) => onDateFilterChange((val as DateFilterOption) || "today")}
               >
-                <option value="today">Hoje</option>
-                <option value="week">Últimos 7 dias</option>
-                <option value="all">Todas as datas</option>
-              </select>
+                <SelectTrigger className="h-9 rounded-lg text-xs font-medium bg-background">
+                  <SelectValue placeholder="Selecione o período" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Hoje</SelectItem>
+                  <SelectItem value="week">Últimos 7 dias</SelectItem>
+                  <SelectItem value="all">Todas as datas</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

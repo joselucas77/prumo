@@ -5,6 +5,17 @@ import { Task } from "@/lib/db";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { BoxIcon } from "@/components/ui/box-icon";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 interface TaskCardProps {
@@ -210,20 +221,31 @@ export function TaskCard({
           </button>
         )}
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (confirm("Deseja realmente excluir esta tarefa?")) {
-              onDelete(task.id);
-            }
-          }}
-          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-          title="Deletar tarefa"
-          aria-label="Deletar tarefa"
-        >
-          <BoxIcon name="trash" className="text-base" />
-        </button>
+        <AlertDialog>
+          <AlertDialogTrigger
+            type="button"
+            onClick={(e) => e.stopPropagation()}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+            title="Deletar tarefa"
+            aria-label="Deletar tarefa"
+          >
+            <BoxIcon name="trash" className="text-base" />
+          </AlertDialogTrigger>
+          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir tarefa?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir &quot;{task.description}&quot;? Esta ação removerá a tarefa localmente e sincronizará a exclusão com a nuvem.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={() => onDelete(task.id)}>
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
