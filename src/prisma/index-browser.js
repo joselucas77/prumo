@@ -165,6 +165,21 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.TaskScalarFieldEnum = {
+  id: 'id',
+  description: 'description',
+  category: 'category',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  recurrenceType: 'recurrenceType',
+  recurrenceValue: 'recurrenceValue',
+  status: 'status',
+  orderIndex: 'orderIndex',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -200,7 +215,8 @@ exports.Prisma.ModelName = {
   Tenant: 'Tenant',
   AccessGroup: 'AccessGroup',
   User: 'User',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  Task: 'Task'
 };
 
 /**

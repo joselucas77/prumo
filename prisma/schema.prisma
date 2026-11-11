@@ -76,3 +76,23 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([createdAt])
 }
+
+model Task {
+  id              String    @id
+  description     String
+  category        String
+  startDate       DateTime  @map("start_date")
+  endDate         DateTime? @map("end_date")
+  recurrenceType  String    @map("recurrence_type")
+  recurrenceValue String    @default("") @map("recurrence_value")
+  status          String    @default("in_progress")
+  orderIndex      Int       @default(0) @map("order_index")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  @@index([updatedAt])
+  @@index([status])
+  @@index([orderIndex])
+  @@map("tasks")
+}

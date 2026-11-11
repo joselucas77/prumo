@@ -19,10 +19,12 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@nozbe/watermelondb": "^0.28.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "@prisma/client-runtime-utils": "^7.10.1",
     "@serwist/next": "^9.5.12",
+    "@supabase/supabase-js": "^2.119.0",
     "bcryptjs": "^3.0.3",
     "boxicons": "^2.1.4",
     "clsx": "^2.1.1",
