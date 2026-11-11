@@ -1,5 +1,5 @@
 import { Model } from "@nozbe/watermelondb";
-import { date, field, readonly, text, writer } from "@nozbe/watermelondb/decorators";
+import { writer } from "@nozbe/watermelondb/decorators";
 
 export type TaskStatus = "completed" | "in_progress" | "archived";
 export type RecurrenceType = "daily" | "interval" | "specific_days";
@@ -7,17 +7,75 @@ export type RecurrenceType = "daily" | "interval" | "specific_days";
 export class Task extends Model {
   static table = "tasks";
 
-  @text("description") description!: string;
-  @text("category") category!: string;
-  @date("start_date") startDate!: Date;
-  @date("end_date") endDate?: Date | null;
-  @text("recurrence_type") recurrenceType!: RecurrenceType;
-  @text("recurrence_value") recurrenceValue!: string;
-  @text("status") status!: TaskStatus;
-  @field("order_index") orderIndex!: number;
+  get description(): string {
+    return (this._getRaw("description") as string) || "";
+  }
+  set description(value: string) {
+    this._setRaw("description", typeof value === "string" ? value.trim() : "");
+  }
 
-  @readonly @date("created_at") createdAt!: Date;
-  @readonly @date("updated_at") updatedAt!: Date;
+  get category(): string {
+    return (this._getRaw("category") as string) || "Geral";
+  }
+  set category(value: string) {
+    this._setRaw("category", typeof value === "string" ? value.trim() : "Geral");
+  }
+
+  get startDate(): Date {
+    const raw = this._getRaw("start_date");
+    return raw ? new Date(Number(raw)) : new Date();
+  }
+  set startDate(value: Date) {
+    const timestamp = value instanceof Date ? value.getTime() : (value ? new Date(value).getTime() : Date.now());
+    this._setRaw("start_date", timestamp);
+  }
+
+  get endDate(): Date | null {
+    const raw = this._getRaw("end_date");
+    return raw ? new Date(Number(raw)) : null;
+  }
+  set endDate(value: Date | null | undefined) {
+    const timestamp = value instanceof Date ? value.getTime() : (value ? new Date(value).getTime() : null);
+    this._setRaw("end_date", timestamp);
+  }
+
+  get recurrenceType(): RecurrenceType {
+    return (this._getRaw("recurrence_type") as RecurrenceType) || "daily";
+  }
+  set recurrenceType(value: RecurrenceType) {
+    this._setRaw("recurrence_type", value || "daily");
+  }
+
+  get recurrenceValue(): string {
+    return (this._getRaw("recurrence_value") as string) || "1";
+  }
+  set recurrenceValue(value: string) {
+    this._setRaw("recurrence_value", typeof value === "string" ? value : String(value ?? "1"));
+  }
+
+  get status(): TaskStatus {
+    return (this._getRaw("status") as TaskStatus) || "in_progress";
+  }
+  set status(value: TaskStatus) {
+    this._setRaw("status", value || "in_progress");
+  }
+
+  get orderIndex(): number {
+    return Number(this._getRaw("order_index") ?? 0);
+  }
+  set orderIndex(value: number) {
+    this._setRaw("order_index", Number(value ?? 0));
+  }
+
+  get createdAt(): Date {
+    const raw = this._getRaw("created_at");
+    return raw ? new Date(Number(raw)) : new Date();
+  }
+
+  get updatedAt(): Date {
+    const raw = this._getRaw("updated_at");
+    return raw ? new Date(Number(raw)) : new Date();
+  }
 
   @writer async updateStatus(newStatus: TaskStatus) {
     await this.update((record) => {
@@ -57,15 +115,5 @@ export class Task extends Model {
       if (data.status !== undefined) record.status = data.status;
       if (data.orderIndex !== undefined) record.orderIndex = data.orderIndex;
     });
-  }
-
-  @writer async markAsArchived() {
-    await this.update((record) => {
-      record.status = "archived";
-    });
-  }
-
-  @writer async remove() {
-    await this.markAsDeleted();
   }
 }

@@ -38,7 +38,6 @@ export function Combobox({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Normaliza lista de opções para { label, value }
   const normalizedOptions: ComboboxOption[] = React.useMemo(() => {
@@ -95,11 +94,6 @@ export function Combobox({
     setOpen(nextOpen);
     if (!nextOpen) {
       setSearchQuery("");
-    } else {
-      // Foca o input de busca ao abrir em desktop
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
     }
   };
 
@@ -131,7 +125,6 @@ export function Combobox({
         <div className="relative flex items-center border-b border-border pb-2 mb-1 px-1">
           <BoxIcon name="search" className="text-muted-foreground text-sm mr-2 shrink-0" />
           <input
-            ref={inputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

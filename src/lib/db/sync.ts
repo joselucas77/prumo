@@ -79,7 +79,7 @@ export async function syncWithSupabase(): Promise<SyncResult> {
 
           if (record.deleted_at) {
             deleted.push(record.id);
-          } else if (lastPulledAt && new Date(record.created_at).getTime() > lastPulledAt) {
+          } else if (!lastPulledAt || new Date(record.created_at).getTime() > lastPulledAt) {
             created.push(localRecord);
           } else {
             updated.push(localRecord);

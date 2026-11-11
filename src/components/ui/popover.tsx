@@ -15,6 +15,7 @@ function PopoverContent({
   positionerClassName,
   align = "center",
   sideOffset = 4,
+  initialFocus = false,
   children,
   ...props
 }: React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Popup> & {
@@ -30,6 +31,7 @@ function PopoverContent({
         className={cn("z-50", positionerClassName)}
       >
         <PopoverPrimitive.Popup
+          initialFocus={initialFocus}
           className={cn(
             "z-50 w-72 rounded-2xl border bg-popover p-4 text-popover-foreground shadow-xl outline-none animate-in fade-in-80 zoom-in-95",
             className
