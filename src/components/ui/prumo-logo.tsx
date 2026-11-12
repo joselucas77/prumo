@@ -45,18 +45,17 @@ export function PrumoLogo({
       className={cn(
         "relative shrink-0 overflow-hidden bg-white shadow-sm border border-border/40 select-none flex items-center justify-center transition-transform",
         roundedClass,
-        className
+        className,
       )}
       style={{ width: dimension, height: dimension }}
-      {...props}
-    >
+      {...props}>
       <Image
         src="/prumo-joao-de-barro.svg"
         alt="Logo Prumo (João-de-barro)"
         width={dimension}
         height={dimension}
         priority={priority}
-        className="object-contain w-full h-full p-0.5"
+        className="object-contain w-full h-full py-0.5 pr-1.5"
       />
     </div>
   );
