@@ -1,142 +1,154 @@
 "use client";
 
 import * as React from "react";
+import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "@/lib/utils";
 import { BoxIcon } from "@/components/ui/box-icon";
 
-interface DrawerProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  children: React.ReactNode;
-}
-
-export function Drawer({ open, onOpenChange, children }: DrawerProps) {
-  const [translateY, setTranslateY] = React.useState<number>(0);
-  const [isSwiping, setIsSwiping] = React.useState<boolean>(false);
-  const startYRef = React.useRef<number>(0);
-  const currentYRef = React.useRef<number>(0);
-
-  React.useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    startYRef.current = e.touches[0].clientY;
-    currentYRef.current = e.touches[0].clientY;
-    setIsSwiping(true);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isSwiping) return;
-    currentYRef.current = e.touches[0].clientY;
-    const deltaY = currentYRef.current - startYRef.current;
-    if (deltaY > 0) {
-      setTranslateY(deltaY);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (!isSwiping) return;
-    setIsSwiping(false);
-    const deltaY = currentYRef.current - startYRef.current;
-
-    // Se puxou mais de 80px para baixo, fecha o drawer
-    if (deltaY > 80) {
-      onOpenChange(false);
-    }
-    setTranslateY(0);
-  };
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end">
-      {/* Backdrop com fechamento ao tocar */}
-      <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
-        onClick={() => onOpenChange(false)}
-      />
-
-      {/* Drawer Shell retrátil com suporte a gesto swipe-down */}
-      <div
-        style={{
-          transform: translateY > 0 ? `translateY(${translateY}px)` : undefined,
-          transition: isSwiping ? "none" : "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-        }}
-        className="relative z-50 flex flex-col w-full max-h-[92dvh] rounded-t-3xl border-t bg-background shadow-2xl animate-in slide-in-from-bottom duration-300 overflow-hidden"
-      >
-        {/* Barra superior com Handle para arrastar para baixo */}
-        <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="w-full pt-3.5 pb-2 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none"
-        >
-          <div className="h-1.5 w-14 rounded-full bg-muted-foreground/40 hover:bg-muted-foreground/60 transition-colors" />
-        </div>
-
-        {children}
-      </div>
-    </div>
-  );
-}
-
-export function DrawerHeader({
-  className,
-  children,
-  onClose,
+const DrawerRoot = ({
+  shouldScaleBackground = true,
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) {
-  return (
-    <div
+}: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
+  <DrawerPrimitive.Root
+    shouldScaleBackground={shouldScaleBackground}
+    {...props}
+  />
+);
+DrawerRoot.displayName = "Drawer";
+
+const DrawerTrigger = DrawerPrimitive.Trigger;
+const DrawerPortal = DrawerPrimitive.Portal;
+const DrawerClose = DrawerPrimitive.Close;
+
+const DrawerOverlay = React.forwardRef<
+  React.ComponentRef<typeof DrawerPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DrawerPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      "fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300",
+      className
+    )}
+    {...props}
+  />
+));
+DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
+
+const DrawerContent = React.forwardRef<
+  React.ComponentRef<typeof DrawerPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DrawerPortal>
+    <DrawerOverlay />
+    <DrawerPrimitive.Content
+      ref={ref}
       className={cn(
-        "relative flex flex-col space-y-1 px-4 py-2.5 border-b shrink-0 text-center",
+        "fixed inset-x-0 bottom-0 z-50 flex max-h-[92dvh] flex-col rounded-t-3xl border-t bg-background shadow-2xl transition-transform duration-300 ease-out focus:outline-none",
         className
       )}
       {...props}
     >
-      {onClose && (
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-3 top-2.5 p-1 rounded-full text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
-          aria-label="Fechar"
-        >
-          <BoxIcon name="x" className="text-xl" />
-        </button>
-      )}
+      <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors shrink-0" />
       {children}
-    </div>
+    </DrawerPrimitive.Content>
+  </DrawerPortal>
+));
+DrawerContent.displayName = "DrawerContent";
+
+const DrawerHeader = ({
+  className,
+  children,
+  onClose,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { onClose?: () => void }) => (
+  <div
+    className={cn(
+      "relative flex flex-col space-y-1.5 px-5 py-3 border-b shrink-0 text-center sm:text-left",
+      className
+    )}
+    {...props}
+  >
+    {onClose && (
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-3.5 top-3 p-1 rounded-full text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+        aria-label="Fechar"
+      >
+        <BoxIcon name="x" className="text-xl" />
+      </button>
+    )}
+    {children}
+  </div>
+);
+DrawerHeader.displayName = "DrawerHeader";
+
+const DrawerFooter = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("mt-auto flex flex-col gap-2 p-4", className)}
+    {...props}
+  />
+);
+DrawerFooter.displayName = "DrawerFooter";
+
+const DrawerTitle = React.forwardRef<
+  React.ComponentRef<typeof DrawerPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DrawerPrimitive.Title
+    ref={ref}
+    className={cn(
+      "text-lg font-bold leading-none tracking-tight text-foreground",
+      className
+    )}
+    {...props}
+  />
+));
+DrawerTitle.displayName = DrawerPrimitive.Title.displayName;
+
+const DrawerDescription = React.forwardRef<
+  React.ComponentRef<typeof DrawerPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DrawerPrimitive.Description
+    ref={ref}
+    className={cn("text-xs text-muted-foreground mt-0.5", className)}
+    {...props}
+  />
+));
+DrawerDescription.displayName = DrawerPrimitive.Description.displayName;
+
+// Drawer com conveniência: aceita open e onOpenChange e engloba o Content automaticamente
+interface SimpleDrawerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function Drawer({ open, onOpenChange, children, className }: SimpleDrawerProps) {
+  return (
+    <DrawerRoot open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className={className}>
+        {children}
+      </DrawerContent>
+    </DrawerRoot>
   );
 }
 
-export function DrawerTitle({
-  className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) {
-  return (
-    <h2 className={cn("text-lg font-bold leading-none tracking-tight text-foreground", className)} {...props}>
-      {children}
-    </h2>
-  );
-}
-
-export function DrawerDescription({
-  className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p className={cn("text-xs text-muted-foreground mt-1", className)} {...props}>
-      {children}
-    </p>
-  );
-}
+export {
+  DrawerRoot,
+  DrawerTrigger,
+  DrawerPortal,
+  DrawerClose,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerHeader,
+  DrawerFooter,
+  DrawerTitle,
+  DrawerDescription,
+};

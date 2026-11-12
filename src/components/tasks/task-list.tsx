@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Task } from "@/lib/db";
 import { TaskCard } from "./task-card";
 import { BoxIcon } from "@/components/ui/box-icon";
@@ -17,6 +18,14 @@ interface TaskListProps {
   isTodayView?: boolean;
 }
 
+interface TouchDragState {
+  x: number;
+  y: number;
+  width: number;
+  offsetX: number;
+  offsetY: number;
+}
+
 export function TaskList({
   tasks,
   onToggleStatus,
@@ -29,6 +38,7 @@ export function TaskList({
 }: TaskListProps) {
   const [draggedTaskId, setDraggedTaskId] = React.useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = React.useState<string | null>(null);
+  const [touchState, setTouchState] = React.useState<TouchDragState | null>(null);
 
   // Referência para toque no mobile
   const touchSourceIdRef = React.useRef<string | null>(null);
@@ -70,6 +80,7 @@ export function TaskList({
   const handleDragEnd = () => {
     setDraggedTaskId(null);
     setDragOverTaskId(null);
+    setTouchState(null);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
@@ -86,16 +97,42 @@ export function TaskList({
     handleDragEnd();
   };
 
-  // Reordenação por toque no Mobile (Touch Events)
-  const handleTouchStartHandle = (taskId: string) => {
+  // Reordenação por toque no Mobile (Touch Events com Card Flutuante em tempo real)
+  const handleTouchStartHandle = (e: React.TouchEvent<HTMLDivElement>, taskId: string) => {
+    const touch = e.touches[0];
+    const cardElement = (e.currentTarget as HTMLElement).closest("[data-task-id]") as HTMLElement | null;
+    const rect = cardElement ? cardElement.getBoundingClientRect() : null;
+
     touchSourceIdRef.current = taskId;
     setDraggedTaskId(taskId);
+
+    if (rect) {
+      setTouchState({
+        x: touch.clientX,
+        y: touch.clientY,
+        width: rect.width,
+        offsetX: touch.clientX - rect.left,
+        offsetY: touch.clientY - rect.top,
+      });
+    } else {
+      setTouchState({
+        x: touch.clientX,
+        y: touch.clientY,
+        width: 320,
+        offsetX: 24,
+        offsetY: 24,
+      });
+    }
   };
 
   React.useEffect(() => {
     const handleGlobalTouchMove = (e: TouchEvent) => {
       if (!touchSourceIdRef.current) return;
       const touch = e.touches[0];
+
+      // Atualiza coordenadas do card flutuante em tempo real
+      setTouchState((prev) => (prev ? { ...prev, x: touch.clientX, y: touch.clientY } : null));
+
       const targetElem = document.elementFromPoint(touch.clientX, touch.clientY);
       const card = targetElem?.closest("[data-task-id]");
       const targetId = card?.getAttribute("data-task-id");
@@ -118,6 +155,7 @@ export function TaskList({
       touchOverIdRef.current = null;
       setDraggedTaskId(null);
       setDragOverTaskId(null);
+      setTouchState(null);
     };
 
     window.addEventListener("touchmove", handleGlobalTouchMove, { passive: true });
@@ -137,6 +175,11 @@ export function TaskList({
     updatedIds.splice(toIndex, 0, removed);
     onReorder(updatedIds);
   };
+
+  const draggedTask = React.useMemo(() => {
+    if (!draggedTaskId) return null;
+    return tasks.find((t) => t.id === draggedTaskId) || null;
+  }, [draggedTaskId, tasks]);
 
   if (tasks.length === 0) {
     return (
@@ -161,7 +204,7 @@ export function TaskList({
   }
 
   return (
-    <div className="flex flex-col gap-2.5 w-full">
+    <div className="flex flex-col gap-2.5 w-full relative">
       {tasks.map((task, index) => (
         <TaskCard
           key={task.id}
@@ -180,9 +223,56 @@ export function TaskList({
           onDragOver={(e) => handleDragOver(e, task.id)}
           onDragEnd={handleDragEnd}
           onDrop={(e) => handleDrop(e, task.id)}
-          onTouchStartHandle={() => handleTouchStartHandle(task.id)}
+          onTouchStartHandle={(e) => handleTouchStartHandle(e, task.id)}
         />
       ))}
+
+      {/* Card Flutuante Virtual que acompanha o dedo no Mobile (Touch Drag Floating Overlay) */}
+      {typeof document !== "undefined" && touchState && draggedTask &&
+        createPortal(
+          <div
+            className="pointer-events-none fixed z-50 rounded-2xl border-2 border-primary bg-card/95 p-3.5 sm:p-4 text-card-foreground shadow-2xl backdrop-blur-md transition-none select-none will-change-transform"
+            style={{
+              left: Math.max(8, touchState.x - touchState.offsetX),
+              top: touchState.y - touchState.offsetY - 12,
+              width: touchState.width,
+              transform: "scale(1.04) rotate(1.5deg)",
+              boxShadow:
+                "0 25px 50px -10px rgba(0, 0, 0, 0.4), 0 0 20px 2px rgba(254, 112, 12, 0.35)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex flex-col items-center justify-center shrink-0 pt-0.5 text-primary">
+                <BoxIcon name="grid-vertical" className="text-xl" />
+              </div>
+
+              <div className="pt-0.5 shrink-0">
+                <div className="h-5 w-5 rounded-md border-2 border-primary flex items-center justify-center bg-primary/10">
+                  {draggedTask.status === "completed" && (
+                    <BoxIcon name="check" className="text-sm font-bold text-primary" />
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0 pr-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  {draggedTask.category && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground">
+                      {draggedTask.category}
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 text-[10px] text-orange-600 dark:text-orange-400 font-bold bg-orange-500/15 px-1.5 py-0.5 rounded-md">
+                    ✨ Movendo...
+                  </span>
+                </div>
+                <p className="text-base font-semibold text-foreground truncate">
+                  {draggedTask.description}
+                </p>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

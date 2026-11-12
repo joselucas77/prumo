@@ -3,6 +3,7 @@
 import * as React from "react";
 import { BoxIcon } from "@/components/ui/box-icon";
 import { Badge } from "@/components/ui/badge";
+import { PrumoLogo } from "@/components/ui/prumo-logo";
 import { type SyncStatus } from "@/hooks/use-online-sync";
 
 interface HeaderProps {
@@ -39,9 +40,7 @@ export function Header({
         <div className="flex items-center justify-between gap-2">
           {/* Logo Prumo */}
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-sm tracking-tight">
-              P
-            </div>
+            <PrumoLogo size={36} className="shadow-sm" />
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
               Prumo
             </h1>
@@ -75,8 +74,8 @@ export function Header({
               disabled={syncStatus === "syncing" || !isOnline}
               title={
                 !isOnline
-                  ? "Modo Offline ativo (Salvo no WatermelonDB local)"
-                  : "Clique para forçar sincronização com o Supabase"
+                  ? "Modo Offline ativo (Salvo no seu dispositivo)"
+                  : "Clique para sincronizar com a nuvem"
               }
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border bg-card hover:bg-accent transition-colors disabled:opacity-60 cursor-pointer shadow-sm">
               {syncStatus === "syncing" ? (

@@ -12,12 +12,14 @@ import { TaskList } from "@/components/tasks/task-list";
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
 import { FloatingActionButton } from "@/components/tasks/floating-action-button";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
+import { StreakCelebration } from "@/components/tasks/streak-celebration";
 import { useTasks } from "@/hooks/use-tasks";
 import { useOnlineSync } from "@/hooks/use-online-sync";
 import { useStreak } from "@/hooks/use-streak";
 import { createTask, updateTask, Task } from "@/lib/db";
 import { BoxIcon } from "@/components/ui/box-icon";
 import { toast } from "sonner";
+import { normalizeSearchText } from "@/lib/utils";
 
 export default function Home() {
   const router = useRouter();
@@ -139,11 +141,11 @@ export default function Home() {
   // 8. Filtragem das tarefas exibidas na lista da tela
   const filteredTasks = React.useMemo(() => {
     return tasks.filter((task) => {
-      // Filtro de Busca por Texto
+      // Filtro de Busca por Texto (sem distinção de maiúsculas/minúsculas e acentuação)
       if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const descMatch = task.description?.toLowerCase().includes(query);
-        const catMatch = task.category?.toLowerCase().includes(query);
+        const query = normalizeSearchText(searchQuery);
+        const descMatch = normalizeSearchText(task.description).includes(query);
+        const catMatch = normalizeSearchText(task.category).includes(query);
         if (!descMatch && !catMatch) return false;
       }
 
@@ -254,6 +256,7 @@ export default function Home() {
 
   const handleArchive = async (taskId: string) => {
     await archiveTask(taskId);
+    toast.success("Tarefa arquivada com sucesso!");
     if (isOnline) {
       syncNow();
     }
@@ -261,6 +264,7 @@ export default function Home() {
 
   const handleDelete = async (taskId: string) => {
     await deleteTask(taskId);
+    toast.success("Tarefa excluída com sucesso!");
     if (isOnline) {
       syncNow();
     }
@@ -369,6 +373,9 @@ export default function Home() {
         categories={categories}
         onSubmit={handleFormSubmit}
       />
+
+      {/* Celebração Animada de Ofensiva Batida */}
+      <StreakCelebration streakCount={streakCount} />
     </div>
   );
 }

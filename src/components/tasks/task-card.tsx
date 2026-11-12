@@ -96,8 +96,8 @@ export function TaskCard({
       className={cn(
         "group relative flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border bg-card text-card-foreground shadow-sm transition-all duration-200 select-none",
         isDragging &&
-          "opacity-30 scale-[0.98] ring-2 ring-primary border-primary shadow-xl",
-        isDragOver && "border-t-4 border-t-primary bg-primary/5",
+          "opacity-35 scale-[0.98] border-dashed border-primary/50 bg-primary/5 shadow-inner ring-1 ring-primary/30",
+        isDragOver && "border-t-4 border-t-primary bg-primary/10 shadow-sm",
         isCompleted && "bg-muted/40 border-muted-foreground/20 opacity-80",
         "hover:shadow-md hover:border-primary/40",
       )}>

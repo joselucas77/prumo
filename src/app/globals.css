@@ -78,3 +78,43 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Transições e Animações Suaves do Drawer (Vaul / Shadcn) */
+[vaul-drawer] {
+  touch-action: none;
+  transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+
+[vaul-overlay] {
+  transition: opacity 0.36s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: opacity;
+}
+
+/* Animações de Ofensiva e Celebração */
+@keyframes flame-pulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 12px rgba(254, 112, 12, 0.5));
+  }
+  50% {
+    transform: scale(1.15) rotate(3deg);
+    filter: drop-shadow(0 0 24px rgba(254, 112, 12, 0.85));
+  }
+}
+
+@keyframes spark-float {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px) scale(0.4);
+  }
+}
+
+.animate-flame-pulse {
+  animation: flame-pulse 1.8s ease-in-out infinite;
+}
+

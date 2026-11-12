@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { PrumoLogo } from "@/components/ui/prumo-logo";
 
 interface AppSidebarProps extends React.ComponentProps<"aside"> {
   variant?: "default" | "inset" | "floating";
@@ -25,8 +26,9 @@ export function AppSidebar({ className, variant = "inset", ...props }: AppSideba
       )}
       {...props}
     >
-      <div className="flex h-16 items-center px-6 border-b font-semibold text-lg tracking-tight">
-        <span>Template Base</span>
+      <div className="flex h-16 items-center gap-3 px-6 border-b font-bold text-lg tracking-tight">
+        <PrumoLogo size={32} />
+        <span>Prumo</span>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {navItems.map((item) => {

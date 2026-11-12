@@ -16,9 +16,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Zelo Base Template",
-  description: "Template Base Boilerplate Fullstack Next.js + Prisma + PWA",
+  title: "Prumo - Gerenciador de Hábitos e Tarefas",
+  description: "Gerencie suas tarefas e hábitos diários offline com consistência e sincronização segura.",
   manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/prumo-joao-de-barro.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Prumo",
+  },
 };
 
 export const viewport: Viewport = {

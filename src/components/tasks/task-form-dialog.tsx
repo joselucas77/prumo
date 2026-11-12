@@ -145,11 +145,11 @@ function TaskFormContent({
         status,
       });
 
-      toast.success(taskToEdit ? "Tarefa atualizada!" : "Tarefa criada com sucesso!");
+      toast.success(taskToEdit ? "Tarefa atualizada com sucesso!" : "Tarefa criada com sucesso!");
       onCancel();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro ao salvar";
-      toast.error("Falha ao salvar tarefa", { description: msg });
+      console.error("Erro ao salvar tarefa:", err);
+      toast.error("Não foi possível salvar a tarefa.");
     } finally {
       setBusy(false);
     }
@@ -426,8 +426,8 @@ export function TaskFormDialog({
         <DialogTitle>{taskToEdit ? "Editar Tarefa" : "Nova Tarefa"}</DialogTitle>
         <DialogDescription>
           {taskToEdit
-            ? "Atualize os detalhes da tarefa salva localmente no WatermelonDB."
-            : "Defina sua meta ou hábito para o Prumo acompanhar offline-first."}
+            ? "Atualize os detalhes da sua tarefa."
+            : "Defina sua meta ou hábito para o Prumo acompanhar."}
         </DialogDescription>
       </DialogHeader>
       {open && (

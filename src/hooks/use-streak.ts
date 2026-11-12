@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { Task } from "@/lib/db";
-import { toast } from "sonner";
 
 interface StreakData {
   count: number;
@@ -124,11 +123,7 @@ export function useStreak(todayTasks: Task[]) {
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
         window.dispatchEvent(new Event("prumo:streak-updated"));
-
-        toast.success("🔥 Ofensiva mantida com sucesso!", {
-          description: `100% das tarefas de hoje foram concluídas! Sua ofensiva agora é de ${nextStreak} dias consecutivos.`,
-          duration: 5000,
-        });
+        // Em vez de toast de texto, a comemoração visual de tela cheia será disparada
       } catch (err) {
         console.error("Erro ao registrar conclusão do dia:", err);
       }

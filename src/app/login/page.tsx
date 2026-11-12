@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { BoxIcon } from "@/components/ui/box-icon";
+import { PrumoLogo } from "@/components/ui/prumo-logo";
 import { toast } from "sonner";
 
 function LoginForm() {
@@ -62,9 +63,7 @@ function LoginForm() {
       <div className="w-full max-w-md bg-card border rounded-3xl p-6 sm:p-8 shadow-xl">
         {/* Cabeçalho de Branding */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-black text-2xl shadow-md mb-3">
-            P
-          </div>
+          <PrumoLogo size="lg" className="mb-3 shadow-md" />
           <h1 className="text-2xl font-black tracking-tight text-foreground">
             Entrar no Prumo
           </h1>

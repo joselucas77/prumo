@@ -81,11 +81,14 @@ function SelectContent({
         className="z-50 min-w-(--anchor-width)">
         <SelectPrimitive.Popup
           className={cn(
-            "relative z-50 max-h-96 min-w-32 overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-xl animate-in fade-in-80 zoom-in-95 p-1 focus:outline-none",
+            "relative z-50 max-h-[min(22rem,60dvh)] min-w-36 overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-2xl p-1 focus:outline-none flex flex-col overscroll-contain touch-pan-y",
             className,
           )}
           {...props}>
-          <SelectPrimitive.List className="p-0.5 space-y-0.5 max-h-72 overflow-y-auto">
+          <SelectPrimitive.List
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            className="p-1 space-y-0.5 max-h-[min(18rem,50dvh)] overflow-y-auto overscroll-contain touch-pan-y webkit-overflow-scrolling-touch">
             {children}
           </SelectPrimitive.List>
         </SelectPrimitive.Popup>

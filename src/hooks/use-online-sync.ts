@@ -29,7 +29,7 @@ export function useOnlineSync(userId?: string) {
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const isSyncingRef = useRef<boolean>(false);
 
-  const runSync = useCallback(async (notifyOnSuccess = false) => {
+  const runSync = useCallback(async () => {
     if (typeof window === "undefined" || !navigator.onLine) {
       setSyncStatus("offline");
       return;
@@ -46,19 +46,15 @@ export function useOnlineSync(userId?: string) {
       if (result.success) {
         setLastSyncedAt(new Date());
         setSyncStatus("idle");
-        if (notifyOnSuccess) {
-          toast.success("Sincronizado com Supabase com sucesso!");
-        }
+        // Não emite toast de sincronização - o status visual (ícone/pontinho verde) no header já indica o estado
       } else {
         setSyncStatus("error");
-        if (result.error && !result.error.includes("offline")) {
-          toast.error("Falha ao sincronizar", { description: result.error });
-        }
+        console.warn("[Prumo Sync] Sincronização pendente:", result.error);
       }
     } catch (err: unknown) {
       setSyncStatus("error");
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
-      toast.error("Erro na sincronização", { description: message });
+      const message = err instanceof Error ? err.message : "Erro na sincronização";
+      console.warn("[Prumo Sync] Erro na sincronização:", message);
     } finally {
       isSyncingRef.current = false;
     }
@@ -68,16 +64,14 @@ export function useOnlineSync(userId?: string) {
     if (typeof window === "undefined") return;
 
     const handleOnline = () => {
-      toast.info("Conexão restabelecida", {
-        description: "Sincronizando tarefas com o Supabase...",
-      });
-      runSync(true);
+      // Reconexão silenciosa com sincronização em background
+      runSync();
     };
 
     const handleOffline = () => {
       setSyncStatus("offline");
       toast.warning("Você está offline", {
-        description: "Tarefas continuarão sendo salvas localmente no WatermelonDB.",
+        description: "Suas tarefas continuam salvas no seu dispositivo.",
       });
     };
 
@@ -87,7 +81,7 @@ export function useOnlineSync(userId?: string) {
     // Sync inicial suave após montagem
     const timer = setTimeout(() => {
       if (navigator.onLine) {
-        runSync(false);
+        runSync();
       }
     }, 300);
 
@@ -102,6 +96,6 @@ export function useOnlineSync(userId?: string) {
     isOnline,
     syncStatus: !isOnline ? "offline" : syncStatus,
     lastSyncedAt,
-    syncNow: () => runSync(true),
+    syncNow: runSync,
   };
 }

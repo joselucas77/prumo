@@ -7,7 +7,7 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { BoxIcon } from "@/components/ui/box-icon";
-import { cn } from "@/lib/utils";
+import { cn, normalizeSearchText } from "@/lib/utils";
 
 export interface ComboboxOption {
   label: string;
@@ -53,14 +53,14 @@ export function Combobox({
     });
   }, [options]);
 
-  // Filtra opções com base na busca
+  // Filtra opções com base na busca (sem distinção de acento ou maiúsculas)
   const filteredOptions = React.useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = normalizeSearchText(searchQuery);
     if (!q) return normalizedOptions;
     return normalizedOptions.filter(
       (opt) =>
-        opt.label.toLowerCase().includes(q) ||
-        opt.value.toLowerCase().includes(q),
+        normalizeSearchText(opt.label).includes(q) ||
+        normalizeSearchText(opt.value).includes(q),
     );
   }, [normalizedOptions, searchQuery]);
 
@@ -68,10 +68,10 @@ export function Combobox({
   const trimmedQuery = searchQuery.trim();
   const exactMatchExists = React.useMemo(() => {
     if (!trimmedQuery) return true;
-    const lower = trimmedQuery.toLowerCase();
+    const norm = normalizeSearchText(trimmedQuery);
     return normalizedOptions.some(
       (opt) =>
-        opt.label.toLowerCase() === lower || opt.value.toLowerCase() === lower,
+        normalizeSearchText(opt.label) === norm || normalizeSearchText(opt.value) === norm,
     );
   }, [normalizedOptions, trimmedQuery]);
 
@@ -165,7 +165,10 @@ export function Combobox({
         </div>
 
         {/* Lista de Opções */}
-        <div className="max-h-60 overflow-y-auto space-y-0.5 py-0.5">
+        <div
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          className="max-h-[min(16rem,50dvh)] overflow-y-auto overscroll-contain touch-pan-y space-y-0.5 py-0.5">
           {/* Opção de Criar Nova Categoria */}
           {allowCreate && trimmedQuery && !exactMatchExists && (
             <button
