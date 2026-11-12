@@ -1,7 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { BoxIcon } from "@/components/ui/box-icon";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +60,7 @@ export function Combobox({
     return normalizedOptions.filter(
       (opt) =>
         opt.label.toLowerCase().includes(q) ||
-        opt.value.toLowerCase().includes(q)
+        opt.value.toLowerCase().includes(q),
     );
   }, [normalizedOptions, searchQuery]);
 
@@ -66,7 +70,8 @@ export function Combobox({
     if (!trimmedQuery) return true;
     const lower = trimmedQuery.toLowerCase();
     return normalizedOptions.some(
-      (opt) => opt.label.toLowerCase() === lower || opt.value.toLowerCase() === lower
+      (opt) =>
+        opt.label.toLowerCase() === lower || opt.value.toLowerCase() === lower,
     );
   }, [normalizedOptions, trimmedQuery]);
 
@@ -105,25 +110,32 @@ export function Combobox({
         className={cn(
           "flex h-10 w-full items-center justify-between rounded-xl border border-input bg-card px-3 py-2 text-base md:text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer shadow-sm transition-colors text-left font-normal",
           !value && "text-muted-foreground",
-          className
-        )}
-      >
+          className,
+        )}>
         <span className="flex items-center gap-2 truncate">
-          <BoxIcon name="category" className="text-primary text-base shrink-0" />
+          <BoxIcon
+            name="category"
+            className="text-primary text-base shrink-0"
+          />
           <span className="truncate">{selectedLabel || placeholder}</span>
         </span>
 
-        <BoxIcon name="chevron-down" className="text-muted-foreground text-xs opacity-60 ml-2 shrink-0" />
+        <BoxIcon
+          name="chevron-down"
+          className="text-muted-foreground text-xs opacity-60 ml-2 shrink-0"
+        />
       </PopoverTrigger>
 
       <PopoverContent
         align="start"
         positionerClassName="w-[var(--anchor-width)] min-w-[240px]"
-        className="w-[var(--anchor-width)] min-w-[240px] p-2 shadow-xl rounded-xl"
-      >
+        className="w-(--anchor-width) min-w-60 p-2 shadow-xl rounded-xl">
         {/* Campo de Busca / Criação */}
         <div className="relative flex items-center border-b border-border pb-2 mb-1 px-1">
-          <BoxIcon name="search" className="text-muted-foreground text-sm mr-2 shrink-0" />
+          <BoxIcon
+            name="search"
+            className="text-muted-foreground text-sm mr-2 shrink-0"
+          />
           <input
             type="text"
             value={searchQuery}
@@ -146,8 +158,7 @@ export function Combobox({
               type="button"
               onClick={() => setSearchQuery("")}
               className="p-0.5 text-muted-foreground hover:text-foreground rounded"
-              title="Limpar busca"
-            >
+              title="Limpar busca">
               <BoxIcon name="x" className="text-sm" />
             </button>
           )}
@@ -160,8 +171,7 @@ export function Combobox({
             <button
               type="button"
               onClick={handleCreateNew}
-              className="flex items-center gap-2 w-full px-2.5 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors cursor-pointer border border-primary/20 text-left mb-1"
-            >
+              className="flex items-center gap-2 w-full px-2.5 py-2 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors cursor-pointer border border-primary/20 text-left mb-1">
               <BoxIcon name="plus-circle" className="text-base shrink-0" />
               <span className="truncate">
                 Criar categoria &quot;<strong>{trimmedQuery}</strong>&quot;
@@ -182,15 +192,14 @@ export function Combobox({
                     "flex items-center justify-between w-full px-2.5 py-2 text-xs rounded-lg transition-colors cursor-pointer text-left",
                     isSelected
                       ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                      : "text-foreground hover:bg-accent"
-                  )}
-                >
+                      : "text-foreground hover:bg-accent",
+                  )}>
                   <span className="truncate">{opt.label}</span>
                   <BoxIcon
                     name="check"
                     className={cn(
                       "text-sm shrink-0 ml-2",
-                      isSelected ? "opacity-100" : "opacity-0"
+                      isSelected ? "opacity-100" : "opacity-0",
                     )}
                   />
                 </button>

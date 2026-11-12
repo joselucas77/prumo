@@ -39,6 +39,7 @@ export function getTasksCollection() {
 }
 
 export interface CreateTaskInput {
+  userId?: string;
   description: string;
   category: string;
   startDate: Date;
@@ -66,6 +67,7 @@ export async function createTask(input: CreateTaskInput): Promise<Task> {
 
   return await db.write(async () => {
     return await collection.create((task) => {
+      if (input.userId) task.userId = input.userId;
       task.description = input.description.trim();
       task.category = input.category ? input.category.trim() : "Geral";
       task.startDate = input.startDate || new Date();

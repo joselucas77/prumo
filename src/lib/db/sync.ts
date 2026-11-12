@@ -23,7 +23,7 @@ export function isSupabaseConfigured(): boolean {
  * 1. Pull changes: busca alterações ocorridas no Supabase desde o último timestamp (`lastPulledAt`).
  * 2. Push changes: envia as alterações locais (criadas, atualizadas e deletadas) para o Supabase.
  */
-export async function syncWithSupabase(): Promise<SyncResult> {
+export async function syncWithSupabase(userId?: string): Promise<SyncResult> {
   if (typeof window === "undefined") {
     return { success: false, error: "Sync não pode rodar no ambiente do servidor." };
   }
@@ -47,6 +47,10 @@ export async function syncWithSupabase(): Promise<SyncResult> {
       pullChanges: async ({ lastPulledAt }) => {
         let query = supabase.from("tasks").select("*");
 
+        if (userId) {
+          query = query.eq("user_id", userId);
+        }
+
         if (lastPulledAt) {
           const lastPulledIso = new Date(lastPulledAt).toISOString();
           query = query.gt("updated_at", lastPulledIso);
@@ -65,6 +69,7 @@ export async function syncWithSupabase(): Promise<SyncResult> {
         (serverRecords || []).forEach((record) => {
           const localRecord = {
             id: record.id,
+            user_id: record.user_id || userId || null,
             description: record.description,
             category: record.category,
             start_date: new Date(record.start_date).getTime(),
@@ -109,6 +114,7 @@ export async function syncWithSupabase(): Promise<SyncResult> {
         if (created.length > 0) {
           const payloadToInsert = created.map((item: Record<string, unknown>) => ({
             id: item.id,
+            user_id: item.user_id || userId || null,
             description: item.description,
             category: item.category,
             start_date: new Date(Number(item.start_date)).toISOString(),
@@ -131,6 +137,7 @@ export async function syncWithSupabase(): Promise<SyncResult> {
         if (updated.length > 0) {
           const payloadToUpdate = updated.map((item: Record<string, unknown>) => ({
             id: item.id,
+            user_id: item.user_id || userId || null,
             description: item.description,
             category: item.category,
             start_date: new Date(Number(item.start_date)).toISOString(),

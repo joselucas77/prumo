@@ -53,6 +53,7 @@ model User {
   tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   accessGroup AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
   auditLogs   AuditLog[]
+  tasks       Task[]
 
   @@index([tenantId])
   @@index([accessGroupId])
@@ -79,6 +80,7 @@ model AuditLog {
 
 model Task {
   id              String    @id
+  userId          String?   @map("user_id")
   description     String
   category        String
   startDate       DateTime  @map("start_date")
@@ -91,6 +93,9 @@ model Task {
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
   @@index([updatedAt])
   @@index([status])
   @@index([orderIndex])

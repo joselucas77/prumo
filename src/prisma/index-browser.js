@@ -167,6 +167,7 @@ exports.Prisma.AuditLogScalarFieldEnum = {
 
 exports.Prisma.TaskScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   description: 'description',
   category: 'category',
   startDate: 'startDate',

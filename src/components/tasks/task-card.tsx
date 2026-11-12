@@ -73,7 +73,10 @@ export function TaskCard({
     return null;
   };
 
-  const recurrenceLabel = formatRecurrence(task.recurrenceType, task.recurrenceValue);
+  const recurrenceLabel = formatRecurrence(
+    task.recurrenceType,
+    task.recurrenceValue,
+  );
 
   return (
     <div
@@ -92,24 +95,23 @@ export function TaskCard({
       }}
       className={cn(
         "group relative flex items-start gap-3 p-3.5 sm:p-4 rounded-2xl border bg-card text-card-foreground shadow-sm transition-all duration-200 select-none",
-        isDragging && "opacity-30 scale-[0.98] ring-2 ring-primary border-primary shadow-xl",
+        isDragging &&
+          "opacity-30 scale-[0.98] ring-2 ring-primary border-primary shadow-xl",
         isDragOver && "border-t-4 border-t-primary bg-primary/5",
         isCompleted && "bg-muted/40 border-muted-foreground/20 opacity-80",
-        "hover:shadow-md hover:border-primary/40"
-      )}
-    >
+        "hover:shadow-md hover:border-primary/40",
+      )}>
       {/* Alça de Arraste (Drag Handle) com suporte a Touch no mobile e Mouse no desktop */}
       <div className="flex flex-col items-center justify-center shrink-0 pt-0.5">
         <div
           onTouchStart={onTouchStartHandle}
           className="p-1 -ml-1 text-muted-foreground/40 group-hover:text-muted-foreground hover:text-foreground transition-colors cursor-grab active:cursor-grabbing touch-none select-none"
-          title="Arraste para mover de posição"
-        >
+          title="Arraste para mover de posição">
           <BoxIcon name="grid-vertical" className="text-xl" />
         </div>
 
         {/* Botões rápidos de subir/descer (facilitam reorganização imediata em 1 toque) */}
-        <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
+        <div className="hidden sm:flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           {index > 0 && onMoveUp && (
             <button
               type="button"
@@ -119,8 +121,7 @@ export function TaskCard({
               }}
               className="text-muted-foreground hover:text-foreground p-0.5"
               title="Mover para cima"
-              aria-label="Mover para cima"
-            >
+              aria-label="Mover para cima">
               <BoxIcon name="chevron-up" className="text-xs" />
             </button>
           )}
@@ -133,8 +134,7 @@ export function TaskCard({
               }}
               className="text-muted-foreground hover:text-foreground p-0.5"
               title="Mover para baixo"
-              aria-label="Mover para baixo"
-            >
+              aria-label="Mover para baixo">
               <BoxIcon name="chevron-down" className="text-xs" />
             </button>
           )}
@@ -157,7 +157,9 @@ export function TaskCard({
         <div className="flex flex-wrap items-center gap-1.5 mb-1">
           {/* Badge de Categoria */}
           {task.category && (
-            <Badge variant="secondary" className="text-[10px] font-semibold px-2 py-0">
+            <Badge
+              variant="secondary"
+              className="text-[10px] font-semibold px-2 py-0">
               {task.category}
             </Badge>
           )}
@@ -172,7 +174,9 @@ export function TaskCard({
 
           {/* Badge de Arquivada se aplicável */}
           {isArchived && (
-            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+            <Badge
+              variant="outline"
+              className="text-[10px] text-muted-foreground">
               Arquivada
             </Badge>
           )}
@@ -181,12 +185,11 @@ export function TaskCard({
         {/* Descrição / Título */}
         <p
           className={cn(
-            "text-base md:text-sm font-medium leading-snug break-words transition-all duration-150",
+            "text-base md:text-sm font-medium leading-snug wrap-break-word transition-all duration-150",
             isCompleted
               ? "line-through text-muted-foreground font-normal"
-              : "text-foreground"
-          )}
-        >
+              : "text-foreground",
+          )}>
           {task.description}
         </p>
       </div>
@@ -201,8 +204,7 @@ export function TaskCard({
           }}
           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           title="Editar tarefa"
-          aria-label="Editar tarefa"
-        >
+          aria-label="Editar tarefa">
           <BoxIcon name="edit-alt" className="text-base" />
         </button>
 
@@ -215,8 +217,7 @@ export function TaskCard({
             }}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             title="Arquivar tarefa"
-            aria-label="Arquivar tarefa"
-          >
+            aria-label="Arquivar tarefa">
             <BoxIcon name="archive-in" className="text-base" />
           </button>
         )}
@@ -227,15 +228,16 @@ export function TaskCard({
             onClick={(e) => e.stopPropagation()}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
             title="Deletar tarefa"
-            aria-label="Deletar tarefa"
-          >
+            aria-label="Deletar tarefa">
             <BoxIcon name="trash" className="text-base" />
           </AlertDialogTrigger>
           <AlertDialogContent onClick={(e) => e.stopPropagation()}>
             <AlertDialogHeader>
               <AlertDialogTitle>Excluir tarefa?</AlertDialogTitle>
               <AlertDialogDescription>
-                Tem certeza que deseja excluir &quot;{task.description}&quot;? Esta ação removerá a tarefa localmente e sincronizará a exclusão com a nuvem.
+                Tem certeza que deseja excluir &quot;{task.description}&quot;?
+                Esta ação removerá a tarefa localmente e sincronizará a exclusão
+                com a nuvem.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

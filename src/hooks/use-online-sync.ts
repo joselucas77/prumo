@@ -23,7 +23,7 @@ function getServerOnlineSnapshot(): boolean {
   return true;
 }
 
-export function useOnlineSync() {
+export function useOnlineSync(userId?: string) {
   const isOnline = useSyncExternalStore(subscribeOnline, getOnlineSnapshot, getServerOnlineSnapshot);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle");
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
@@ -41,7 +41,7 @@ export function useOnlineSync() {
       isSyncingRef.current = true;
       setSyncStatus("syncing");
 
-      const result = await syncWithSupabase();
+      const result = await syncWithSupabase(userId);
 
       if (result.success) {
         setLastSyncedAt(new Date());
@@ -62,7 +62,7 @@ export function useOnlineSync() {
     } finally {
       isSyncingRef.current = false;
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

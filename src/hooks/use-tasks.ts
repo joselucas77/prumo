@@ -11,8 +11,9 @@ import {
   Task,
 } from "@/lib/db";
 import { Q } from "@nozbe/watermelondb";
+import type { Clause } from "@nozbe/watermelondb/QueryDescription";
 
-export function useTasks() {
+export function useTasks(userId?: string) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,9 +32,20 @@ export function useTasks() {
         const db = getDatabase();
         const collection = db.get<Task>("tasks");
 
-        // Observa as tarefas ordenadas por order_index
+        // Observa as tarefas ordenadas por order_index, filtrando pelo usuário se informado
+        const conditions: Clause[] = [Q.sortBy("order_index", Q.asc)];
+        if (userId) {
+          conditions.push(
+            Q.or(
+              Q.where("user_id", userId),
+              Q.where("user_id", null),
+              Q.where("user_id", "")
+            )
+          );
+        }
+
         const observable = collection
-          .query(Q.sortBy("order_index", Q.asc))
+          .query(...conditions)
           .observe();
 
         subscription = observable.subscribe({
@@ -68,7 +80,7 @@ export function useTasks() {
         subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [userId]);
 
   const handleToggle = useCallback(async (taskId: string) => {
     try {

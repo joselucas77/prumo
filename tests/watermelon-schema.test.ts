@@ -10,6 +10,7 @@ describe("WatermelonDB Tasks Schema", () => {
     expect(tasksTable.name).toBe("tasks");
 
     const columnNames = Object.keys(tasksTable.columns);
+    expect(columnNames).toContain("user_id");
     expect(columnNames).toContain("description");
     expect(columnNames).toContain("category");
     expect(columnNames).toContain("start_date");

@@ -7,6 +7,13 @@ export type RecurrenceType = "daily" | "interval" | "specific_days";
 export class Task extends Model {
   static table = "tasks";
 
+  get userId(): string {
+    return (this._getRaw("user_id") as string) || "";
+  }
+  set userId(value: string) {
+    this._setRaw("user_id", typeof value === "string" ? value : "");
+  }
+
   get description(): string {
     return (this._getRaw("description") as string) || "";
   }

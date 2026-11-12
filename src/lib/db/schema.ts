@@ -1,11 +1,12 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: "tasks",
       columns: [
+        { name: "user_id", type: "string", isOptional: true },
         { name: "description", type: "string" },
         { name: "category", type: "string" },
         { name: "start_date", type: "number" },

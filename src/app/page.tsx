@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/tasks/header";
 import {
   TaskFilters,
@@ -16,9 +17,45 @@ import { useOnlineSync } from "@/hooks/use-online-sync";
 import { useStreak } from "@/hooks/use-streak";
 import { createTask, updateTask, Task } from "@/lib/db";
 import { BoxIcon } from "@/components/ui/box-icon";
+import { toast } from "sonner";
 
 export default function Home() {
-  // 1. Reatividade e persistência local via WatermelonDB
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = React.useState<{ id: string; name: string; email: string } | null>(null);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    async function checkUserSession() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.user) {
+            setCurrentUser(data.user);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not check user session:", err);
+      }
+    }
+    checkUserSession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      toast.info("Você saiu da sua conta.");
+      router.push("/login");
+      router.refresh();
+    } catch (err) {
+      console.error("Erro ao realizar logout:", err);
+    }
+  };
+
+  // 1. Reatividade e persistência local via WatermelonDB filtrado pelo usuário
   const {
     tasks,
     isLoading,
@@ -27,10 +64,10 @@ export default function Home() {
     deleteTask,
     archiveTask,
     reorderTasks,
-  } = useTasks();
+  } = useTasks(currentUser?.id);
 
   // 2. Detecção de internet e sincronização com Supabase
-  const { isOnline, syncStatus, syncNow } = useOnlineSync();
+  const { isOnline, syncStatus, syncNow } = useOnlineSync(currentUser?.id);
 
   // 3. Estados de Filtros e Busca
   const [searchQuery, setSearchQuery] = React.useState<string>("");
@@ -189,8 +226,9 @@ export default function Home() {
         status: data.status,
       });
     } else {
-      // Criação no WatermelonDB
+      // Criação no WatermelonDB associada ao usuário autenticado
       await createTask({
+        userId: currentUser?.id,
         description: data.description,
         category: data.category,
         startDate: data.startDate,
@@ -237,7 +275,7 @@ export default function Home() {
 
   return (
     <div className="min-h-full flex flex-col bg-background text-foreground antialiased selection:bg-primary/20 pb-24 md:pb-10">
-      {/* 1. Header com Branding Prumo e Contador de Ofensiva */}
+      {/* 1. Header com Branding Prumo, Contador de Ofensiva e Logout */}
       <Header
         streakCount={streakCount}
         isTodayCompleted={isTodayCompleted}
@@ -247,6 +285,8 @@ export default function Home() {
         isOnline={isOnline}
         syncStatus={syncStatus}
         onSyncClick={syncNow}
+        userName={currentUser?.name}
+        onLogout={handleLogout}
       />
 
       {/* Conteúdo Principal */}
@@ -283,7 +323,7 @@ export default function Home() {
             </h2>
 
             {filteredTasks.length > 1 && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1 hidden sm:flex">
+              <span className="hidden sm:flex text-xs text-muted-foreground items-center gap-1">
                 <BoxIcon name="move" className="text-sm" />
                 Arraste os cards para reordenar
               </span>
