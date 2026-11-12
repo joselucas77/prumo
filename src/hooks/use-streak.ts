@@ -91,8 +91,61 @@ export function saveDailySnapshots(snapshots: Record<string, DaySnapshot>) {
 }
 
 /**
+ * Calcula a sequência de ofensiva consecutiva baseando-se estritamente nas datas
+ * do calendário (ciclos de 24 horas por dia).
+ * Evita duplicações no mesmo dia e calcula retroativamente a partir de hoje (se concluído)
+ * ou a partir de ontem (se o dia de hoje ainda não terminou).
+ */
+export function calculateStreakFromHistory(
+  completedDates: string[],
+  isTodayCompleted: boolean
+): number {
+  const datesSet = new Set(completedDates);
+  const todayStr = getTodayDateString();
+  const yesterdayStr = getYesterdayDateString();
+
+  if (isTodayCompleted) {
+    datesSet.add(todayStr);
+  } else {
+    datesSet.delete(todayStr);
+  }
+
+  // Se hoje está concluído, começamos a contagem retroativa a partir de hoje.
+  // Se hoje não está concluído, verificamos se ontem foi concluído.
+  let count = 0;
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+
+  if (!datesSet.has(todayStr)) {
+    // Hoje não está 100% concluído.
+    if (!datesSet.has(yesterdayStr)) {
+      return 0; // Nem hoje nem ontem concluídos -> ofensiva zerada
+    }
+    // Começa a contar de ontem
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  while (true) {
+    const y = cursor.getFullYear();
+    const m = String(cursor.getMonth() + 1).padStart(2, "0");
+    const d = String(cursor.getDate()).padStart(2, "0");
+    const dateStr = `${y}-${m}-${d}`;
+
+    if (datesSet.has(dateStr)) {
+      count++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return count;
+}
+
+/**
  * Consolida a ofensiva para os dias já finalizados (virada da meia-noite).
- * O dia de hoje nunca é contado nem celebra antes de terminar.
+ * Executa silenciosamente na inicialização do app para manter os dados corretos,
+ * sem disparar popups de celebração na tela (a celebração só ocorre no momento da conclusão).
  */
 export function consolidatePastDays() {
   if (typeof window === "undefined") return;
@@ -105,16 +158,6 @@ export function consolidatePastDays() {
 
   // Caso 1: O dia de ontem já foi consolidado
   if (state.lastConsolidatedDate === yesterdayStr) {
-    // Se ainda não celebrou o dia conquistado na tela, dispara ao abrir no novo dia
-    if (state.lastCelebratedDate !== yesterdayStr && state.count > 0) {
-      state.lastCelebratedDate = yesterdayStr;
-      saveStreakState(state);
-      window.dispatchEvent(
-        new CustomEvent("prumo:streak-celebration", {
-          detail: { streakCount: state.count, date: yesterdayStr },
-        })
-      );
-    }
     return;
   }
 
@@ -123,20 +166,9 @@ export function consolidatePastDays() {
 
   if (yesterdaySnapshot && yesterdaySnapshot.isFullyCompleted) {
     // Ontem fechou o dia com 100% das tarefas concluídas
-    let nextCount = 1;
-
-    if (state.lastConsolidatedDate) {
-      const diff = getDaysDifference(state.lastConsolidatedDate, yesterdayStr);
-      if (diff === 1) {
-        nextCount = state.count + 1;
-      } else {
-        nextCount = 1;
-      }
-    } else {
-      nextCount = 1;
-    }
-
     const nextHistory = Array.from(new Set([...state.history, yesterdayStr]));
+    const nextCount = calculateStreakFromHistory(nextHistory, false);
+
     const nextState: StreakState = {
       count: nextCount,
       lastConsolidatedDate: yesterdayStr,
@@ -145,13 +177,6 @@ export function consolidatePastDays() {
     };
 
     saveStreakState(nextState);
-
-    // Dispara a animação comemorativa do dia anterior conquistado
-    window.dispatchEvent(
-      new CustomEvent("prumo:streak-celebration", {
-        detail: { streakCount: nextCount, date: yesterdayStr },
-      })
-    );
   } else {
     // Ontem não foi 100% concluído ou não houve snapshot
     if (state.lastConsolidatedDate) {
@@ -165,6 +190,125 @@ export function consolidatePastDays() {
       }
     }
   }
+}
+
+/**
+ * Dispara a celebração e atualiza a ofensiva no momento em que o usuário
+ * efetivamente conclui todas as tarefas do dia (100%).
+ * Garante que a celebração só ocorra uma única vez dentro das 24h do mesmo dia.
+ */
+export function checkAndTriggerTodayCompletion(
+  isTodayCompleted: boolean,
+  totalCount: number
+): boolean {
+  if (typeof window === "undefined") return false;
+  if (!isTodayCompleted || totalCount === 0) return false;
+
+  const todayStr = getTodayDateString();
+  const state = loadStreakState();
+
+  // Se já foi celebrado hoje, não dispara o modal novamente
+  if (state.lastCelebratedDate === todayStr) {
+    return false;
+  }
+
+  const nextHistory = Array.from(new Set([...state.history, todayStr]));
+  const nextCount = calculateStreakFromHistory(nextHistory, true);
+
+  const nextState: StreakState = {
+    count: nextCount,
+    lastConsolidatedDate: todayStr,
+    lastCelebratedDate: todayStr,
+    history: nextHistory,
+  };
+
+  saveStreakState(nextState);
+
+  // Garante snapshot do dia atual atualizado
+  const snapshots = loadDailySnapshots();
+  snapshots[todayStr] = {
+    date: todayStr,
+    totalTasks: totalCount,
+    completedTasks: totalCount,
+    isFullyCompleted: true,
+    updatedAt: Date.now(),
+  };
+  saveDailySnapshots(snapshots);
+
+  // Dispara o evento para exibir a tela de celebração
+  window.dispatchEvent(
+    new CustomEvent("prumo:streak-celebration", {
+      detail: { streakCount: nextCount, date: todayStr },
+    })
+  );
+
+  return true;
+}
+
+export interface WeekDayInfo {
+  key: string;
+  label: string; // "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"
+  dateStr: string; // "YYYY-MM-DD"
+  isToday: boolean;
+  isPast: boolean;
+  isFuture: boolean;
+  isCompleted: boolean;
+}
+
+/**
+ * Retorna os 7 dias da semana atual começando na Segunda-feira (Seg) até Domingo (Dom).
+ * Identifica dias concluídos com base no histórico de snapshots e no dia atual.
+ * Todos os dias (inclusive Domingo) são tratados de forma uniforme.
+ */
+export function getWeekStreakDays(isTodayCompleted: boolean): WeekDayInfo[] {
+  const now = new Date();
+  const todayStr = getTodayDateString();
+  const currentDayOfWeek = now.getDay(); // 0: Dom, 1: Seg, ..., 6: Sáb
+  const dayIndexMondayFirst = (currentDayOfWeek + 6) % 7; // Seg: 0 ... Dom: 6
+
+  const labels = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+  const keys = ["seg", "ter", "qua", "qui", "sex", "sab", "dom"];
+
+  const snapshots = loadDailySnapshots();
+  const streakState = loadStreakState();
+  const historySet = new Set(streakState.history || []);
+
+  const days: WeekDayInfo[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - dayIndexMondayFirst + i);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${day}`;
+
+    const isToday = i === dayIndexMondayFirst;
+    const isPast = i < dayIndexMondayFirst;
+    const isFuture = i > dayIndexMondayFirst;
+
+    let isCompleted = false;
+    if (isToday) {
+      isCompleted = isTodayCompleted;
+    } else if (isPast) {
+      const snap = snapshots[dateStr];
+      isCompleted = snap?.isFullyCompleted === true || historySet.has(dateStr);
+    } else {
+      isCompleted = false;
+    }
+
+    days.push({
+      key: keys[i],
+      label: labels[i],
+      dateStr,
+      isToday,
+      isPast,
+      isFuture,
+      isCompleted,
+    });
+  }
+
+  return days;
 }
 
 /**
@@ -189,12 +333,14 @@ export function simulateDayClosingForTesting(): boolean {
   saveDailySnapshots(snapshots);
 
   const state = loadStreakState();
-  const nextCount = state.count + 1;
+  const nextHistory = Array.from(new Set([...state.history, yesterdayStr]));
+  const nextCount = calculateStreakFromHistory(nextHistory, false);
+
   const nextState: StreakState = {
     count: nextCount,
     lastConsolidatedDate: yesterdayStr,
     lastCelebratedDate: yesterdayStr,
-    history: Array.from(new Set([...state.history, yesterdayStr])),
+    history: nextHistory,
   };
   saveStreakState(nextState);
 
@@ -229,12 +375,17 @@ export function useStreak(todayTasks: Task[]) {
   const isTodayCompleted = totalCount > 0 && completedCount === totalCount;
   const completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  // 1. Atualiza o snapshot do dia atual em segundo plano
+  const isInitialMountRef = useRef(true);
+  const prevIsTodayCompletedRef = useRef(false);
+
+  // 1. Atualiza o snapshot do dia atual e recalcula a ofensiva de forma determinística
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const todayStr = getTodayDateString();
+    const yesterdayStr = getYesterdayDateString();
     const snapshots = loadDailySnapshots();
+    const state = loadStreakState();
 
     snapshots[todayStr] = {
       date: todayStr,
@@ -245,6 +396,44 @@ export function useStreak(todayTasks: Task[]) {
     };
 
     saveDailySnapshots(snapshots);
+
+    if (isTodayCompleted) {
+      // Garante que o dia de hoje está no histórico
+      const nextHistory = Array.from(new Set([...state.history, todayStr]));
+      const nextCount = calculateStreakFromHistory(nextHistory, true);
+
+      if (state.count !== nextCount || state.lastConsolidatedDate !== todayStr) {
+        saveStreakState({
+          ...state,
+          count: nextCount,
+          lastConsolidatedDate: todayStr,
+          history: nextHistory,
+        });
+      }
+
+      // Dispara a tela de celebração apenas na transição para concluído e uma vez por dia
+      if (!isInitialMountRef.current && !prevIsTodayCompletedRef.current) {
+        checkAndTriggerTodayCompletion(isTodayCompleted, totalCount);
+      }
+    } else {
+      // Se hoje deixou de ser 100% concluído (desmarcou tarefa ou adicionou nova tarefa pendente):
+      // Remove o dia de hoje do histórico ativo e recalcula a sequência retroativa
+      if (state.history.includes(todayStr) || state.lastConsolidatedDate === todayStr) {
+        const nextHistory = state.history.filter((d) => d !== todayStr);
+        const nextCount = calculateStreakFromHistory(nextHistory, false);
+        saveStreakState({
+          ...state,
+          count: nextCount,
+          lastConsolidatedDate: nextHistory.includes(yesterdayStr) ? yesterdayStr : null,
+          history: nextHistory,
+        });
+      }
+    }
+
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+    }
+    prevIsTodayCompletedRef.current = isTodayCompleted;
   }, [totalCount, completedCount, isTodayCompleted]);
 
   // 2. Consolidação automática de dias anteriores na montagem e na virada da meia-noite

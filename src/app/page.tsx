@@ -136,7 +136,6 @@ export default function Home() {
     completionPercentage,
     completedCount,
     totalCount,
-    simulateDayClosing,
   } = useStreak(todayTasks);
 
   // 8. Filtragem das tarefas exibidas na lista da tela
@@ -292,7 +291,6 @@ export default function Home() {
         onSyncClick={syncNow}
         userName={currentUser?.name}
         onLogout={handleLogout}
-        onSimulateDayClosing={simulateDayClosing}
       />
 
       {/* Conteúdo Principal */}
@@ -377,7 +375,7 @@ export default function Home() {
       />
 
       {/* Celebração Animada de Ofensiva Batida */}
-      <StreakCelebration streakCount={streakCount} />
+      <StreakCelebration streakCount={streakCount} isTodayCompleted={isTodayCompleted} />
     </div>
   );
 }

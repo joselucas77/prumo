@@ -17,7 +17,6 @@ interface HeaderProps {
   onSyncClick: () => void;
   userName?: string;
   onLogout?: () => void;
-  onSimulateDayClosing?: () => void;
 }
 
 export function Header({
@@ -31,7 +30,6 @@ export function Header({
   onSyncClick,
   userName,
   onLogout,
-  onSimulateDayClosing,
 }: HeaderProps) {
   const [streakExpanded, setStreakExpanded] = React.useState<boolean>(false);
 
@@ -182,16 +180,6 @@ export function Header({
                       ? "100% das tarefas concluídas hoje! A sua ofensiva será consolidada ao final do dia."
                       : "Complete todas as tarefas de hoje até o final do dia para garantir o avanço de amanhã."}
                   </p>
-                  {isTodayCompleted && onSimulateDayClosing && (
-                    <button
-                      type="button"
-                      onClick={onSimulateDayClosing}
-                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
-                      title="Simula a virada da meia-noite para testar a celebração e avanço imediato da ofensiva">
-                      <BoxIcon name="time" className="text-xs" />
-                      <span>Simular virada do dia (Testar ciclo)</span>
-                    </button>
-                  )}
                 </div>
               </div>
 
