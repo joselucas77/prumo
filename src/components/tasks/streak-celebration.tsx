@@ -13,8 +13,8 @@ export function StreakCelebration({ streakCount }: StreakCelebrationProps) {
   const [displayCount, setDisplayCount] = React.useState<number>(streakCount || 1);
 
   React.useEffect(() => {
-    const handleDayCompleted = (e: Event) => {
-      const customEvent = e as CustomEvent<{ streakCount?: number }>;
+    const handleCelebration = (e: Event) => {
+      const customEvent = e as CustomEvent<{ streakCount?: number; date?: string }>;
       if (customEvent.detail?.streakCount) {
         setDisplayCount(customEvent.detail.streakCount);
       } else {
@@ -23,9 +23,11 @@ export function StreakCelebration({ streakCount }: StreakCelebrationProps) {
       setIsOpen(true);
     };
 
-    window.addEventListener("prumo:day-completed", handleDayCompleted);
+    window.addEventListener("prumo:streak-celebration", handleCelebration);
+    window.addEventListener("prumo:day-completed", handleCelebration);
     return () => {
-      window.removeEventListener("prumo:day-completed", handleDayCompleted);
+      window.removeEventListener("prumo:streak-celebration", handleCelebration);
+      window.removeEventListener("prumo:day-completed", handleCelebration);
     };
   }, [streakCount]);
 
@@ -102,7 +104,7 @@ export function StreakCelebration({ streakCount }: StreakCelebrationProps) {
         </div>
 
         <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xs">
-          Parabéns! Você concluiu todas as tarefas programadas para hoje e manteve o seu ritmo com o Prumo.
+          Parabéns! Você fechou o ciclo anterior com 100% das tarefas concluídas e garantiu mais um dia na sua ofensiva de consistência.
         </p>
 
         {/* Barra 100% de Conclusão */}
@@ -117,7 +119,7 @@ export function StreakCelebration({ streakCount }: StreakCelebrationProps) {
           className="mt-5 w-full rounded-xl bg-linear-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-sm shadow-md shadow-orange-500/25 py-2.5 cursor-pointer"
         >
           <BoxIcon name="check" className="mr-1.5 text-lg" />
-          Continuar com Foco
+          Começar o Dia com Foco
         </Button>
       </div>
     </div>

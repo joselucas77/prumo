@@ -17,6 +17,7 @@ interface HeaderProps {
   onSyncClick: () => void;
   userName?: string;
   onLogout?: () => void;
+  onSimulateDayClosing?: () => void;
 }
 
 export function Header({
@@ -30,6 +31,7 @@ export function Header({
   onSyncClick,
   userName,
   onLogout,
+  onSimulateDayClosing,
 }: HeaderProps) {
   const [streakExpanded, setStreakExpanded] = React.useState<boolean>(false);
 
@@ -52,7 +54,11 @@ export function Header({
             <button
               type="button"
               onClick={() => setStreakExpanded((prev) => !prev)}
-              title="Clique para ver o progresso e detalhes da ofensiva"
+              title={
+                isTodayCompleted
+                  ? `Hoje: 100% concluído! A sua ofensiva de ${streakCount} ${streakCount === 1 ? "dia" : "dias"} será consolidada ao final do dia.`
+                  : `Ofensiva consolidada: ${streakCount} ${streakCount === 1 ? "dia" : "dias"}. Complete as tarefas de hoje para garantir o avanço de amanhã.`
+              }
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer shadow-sm select-none ${
                 isTodayCompleted
                   ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30 hover:bg-orange-500/25"
@@ -62,6 +68,12 @@ export function Header({
               <span>
                 {streakCount} {streakCount === 1 ? "dia" : "dias"}
               </span>
+              {isTodayCompleted && (
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse ml-0.5"
+                  title="Meta de hoje 100%"
+                />
+              )}
               <BoxIcon
                 name={streakExpanded ? "chevron-up" : "chevron-down"}
                 className="text-xs text-muted-foreground ml-0.5"
@@ -162,14 +174,24 @@ export function Header({
                     <Badge
                       variant={isTodayCompleted ? "success" : "warning"}
                       className="font-bold text-[10px]">
-                      {isTodayCompleted ? "Ofensiva Concluída" : "Em Andamento"}
+                      {isTodayCompleted ? "Meta de Hoje Concluída" : "Ciclo em Andamento"}
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {isTodayCompleted
-                      ? "Meta de hoje batida! Você manteve sua consistência diária."
-                      : "Conclua todas as tarefas de hoje para avançar a sequência."}
+                      ? "100% das tarefas concluídas hoje! A sua ofensiva será consolidada ao final do dia."
+                      : "Complete todas as tarefas de hoje até o final do dia para garantir o avanço de amanhã."}
                   </p>
+                  {isTodayCompleted && onSimulateDayClosing && (
+                    <button
+                      type="button"
+                      onClick={onSimulateDayClosing}
+                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
+                      title="Simula a virada da meia-noite para testar a celebração e avanço imediato da ofensiva">
+                      <BoxIcon name="time" className="text-xs" />
+                      <span>Simular virada do dia (Testar ciclo)</span>
+                    </button>
+                  )}
                 </div>
               </div>
 

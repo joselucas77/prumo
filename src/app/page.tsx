@@ -129,13 +129,14 @@ export default function Home() {
     });
   }, [tasks]);
 
-  // 7. Regra de Negócio da Ofensiva: Observa as tarefas de hoje e dispara evento ao atingir 100%
+  // 7. Regra de Negócio da Ofensiva: Ciclo diário avaliado ao final do dia
   const {
     streakCount,
     isTodayCompleted,
     completionPercentage,
     completedCount,
     totalCount,
+    simulateDayClosing,
   } = useStreak(todayTasks);
 
   // 8. Filtragem das tarefas exibidas na lista da tela
@@ -291,6 +292,7 @@ export default function Home() {
         onSyncClick={syncNow}
         userName={currentUser?.name}
         onLogout={handleLogout}
+        onSimulateDayClosing={simulateDayClosing}
       />
 
       {/* Conteúdo Principal */}
