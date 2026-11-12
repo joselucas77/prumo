@@ -278,7 +278,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-full flex flex-col bg-background text-foreground antialiased selection:bg-primary/20 pb-24 md:pb-10">
+    <div className="min-h-dvh flex flex-col bg-background text-foreground antialiased pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
       {/* 1. Header com Branding Prumo, Contador de Ofensiva e Logout */}
       <Header
         streakCount={streakCount}

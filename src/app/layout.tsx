@@ -35,12 +35,19 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "Prumo",
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c090c" },
+  ],
 };
 
 export default function RootLayout({

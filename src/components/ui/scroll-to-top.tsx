@@ -40,7 +40,7 @@ export function ScrollToTop({ className }: ScrollToTopProps) {
       type="button"
       onClick={handleScrollToTop}
       className={cn(
-        "fixed bottom-24 right-6 md:bottom-26 md:right-8 z-30",
+        "fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-6 md:bottom-26 md:right-8 z-30",
         "h-11 w-11 rounded-full border bg-card/90 backdrop-blur-md text-muted-foreground shadow-lg hover:text-foreground hover:border-primary/50 hover:bg-card hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center select-none animate-in fade-in zoom-in-75",
         className
       )}

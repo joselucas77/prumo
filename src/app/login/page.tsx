@@ -59,7 +59,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-muted/30">
+    <div className="min-h-dvh w-full flex items-center justify-center p-4 bg-background pt-[env(safe-area-inset-top)] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div className="w-full max-w-md bg-card border rounded-3xl p-6 sm:p-8 shadow-xl">
         {/* Cabeçalho de Branding */}
         <div className="flex flex-col items-center text-center mb-6">

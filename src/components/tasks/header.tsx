@@ -34,7 +34,7 @@ export function Header({
   const [streakExpanded, setStreakExpanded] = React.useState<boolean>(false);
 
   return (
-    <header className="w-full border-b bg-background/95 backdrop-blur-md sticky top-0 z-30 transition-all">
+    <header className="w-full border-b bg-background/95 backdrop-blur-md sticky top-0 z-30 transition-all pt-[env(safe-area-inset-top)]">
       <div className="max-w-4xl mx-auto px-4 py-3 sm:py-3.5 flex flex-col gap-3">
         {/* Barra Superior: Logo Prumo, Botão de Ofensiva Minimizado e Sync */}
         <div className="flex items-center justify-between gap-2">
